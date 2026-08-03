@@ -1,0 +1,79 @@
+import { NavLink, Outlet } from 'react-router-dom';
+import { Icon, type IconName } from './Icon';
+
+interface Tab {
+  to: string;
+  label: string;
+  icon: IconName;
+}
+
+const TABS: Tab[] = [
+  { to: '/plan', label: 'Plan', icon: 'calendar' },
+  { to: '/recipes', label: 'Recipes', icon: 'book' },
+  { to: '/shop', label: 'Shop', icon: 'basket' },
+];
+
+/**
+ * App chrome: a scrollable content area plus a safe-area-aware bottom tab
+ * bar for the three primary destinations. Screens render into the
+ * `<Outlet />`; anything not in the tab bar (capture, import, recipe
+ * detail, settings) is reached by navigating from within a screen, not from
+ * here.
+ */
+export function AppShell() {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <main
+        style={{
+          flex: 1,
+          minHeight: 0,
+          overflowY: 'auto',
+          overscrollBehavior: 'contain',
+          paddingBottom: 'calc(var(--bottom-bar-height) + env(safe-area-inset-bottom))',
+        }}
+      >
+        <Outlet />
+      </main>
+
+      <nav
+        aria-label="Primary"
+        style={{
+          position: 'fixed',
+          left: 0,
+          right: 0,
+          bottom: 0,
+          zIndex: 100, // keep in sync with --z-bottom-bar in tokens.css
+          display: 'flex',
+          background: 'var(--color-surface)',
+          borderTop: '1px solid var(--color-border)',
+          paddingBottom: 'env(safe-area-inset-bottom)',
+        }}
+      >
+        {TABS.map((tab) => (
+          <NavLink
+            key={tab.to}
+            to={tab.to}
+            className="tap-target"
+            style={({ isActive }) => ({
+              flex: 1,
+              flexDirection: 'column',
+              gap: 2,
+              height: 'var(--bottom-bar-height)',
+              color: isActive ? 'var(--color-primary)' : 'var(--color-text-secondary)',
+              fontSize: 'var(--font-size-xs)',
+              fontWeight: isActive ? 700 : 500,
+            })}
+          >
+            {({ isActive }) => (
+              <>
+                <Icon name={tab.icon} size={24} />
+                <span>{tab.label}</span>
+                <span className="visually-hidden">{isActive ? ' (current)' : ''}</span>
+              </>
+            )}
+          </NavLink>
+        ))}
+      </nav>
+    </div>
+  );
+}

@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- viewport-fit=cover + safe-area-inset-* in global.css lets the bottom
+         tab bar and sticky CTA sit correctly behind the iOS home indicator. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#FBF8F5" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#171310" />
+    <meta name="description" content="Capture recipes, plan the week, shop from one merged list." />
+
+    <!-- iOS install affordances: standalone chrome, translucent status bar
+         over our own dark top area, and a proper touch icon. -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Meals" />
+    <!--
+      %BASE_URL% is substituted by Vite with the configured `base`
+      ('/mealspwa/') at both dev-serve and build time, so these links are
+      correct whether you're on localhost or on GitHub Pages without
+      hard-coding the subpath here.
+    -->
+    <link rel="apple-touch-icon" href="%BASE_URL%apple-touch-icon.png" />
+    <link rel="icon" type="image/svg+xml" href="%BASE_URL%favicon.svg" />
+    <!-- vite-plugin-pwa injects the manifest link itself; no manual <link> needed. -->
+
+    <title>Meals</title>
+
+    <script>
+      // No-flash theme boot: read the stored preference (set by the in-app
+      // toggle) before first paint, so a dark-mode phone never flashes a
+      // light screen. Falls back to the OS preference when nothing is stored.
+      // Kept as a tiny inline script (not a module) so it runs before any CSS
+      // or app JS has loaded.
+      (function () {
+        try {
+          var stored = localStorage.getItem('meals:theme');
+          var theme =
+            stored === 'light' || stored === 'dark'
+              ? stored
+              : window.matchMedia('(prefers-color-scheme: dark)').matches
+                ? 'dark'
+                : 'light';
+          document.documentElement.setAttribute('data-theme', theme);
+        } catch (e) {
+          // localStorage unavailable (private mode, etc.) — CSS media query
+          // fallback in tokens.css still applies.
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <!-- Root-relative (not base-prefixed): Vite resolves this against the
+         project root and rewrites it to the correct, base-prefixed, hashed
+         asset URL at build time — see the %BASE_URL% note above for the
+         same reasoning applied to the icon links. -->
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
