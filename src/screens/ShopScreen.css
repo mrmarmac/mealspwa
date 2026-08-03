@@ -1,0 +1,306 @@
+.shop {
+  padding-bottom: var(--space-10);
+}
+
+.shop__loading {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-9);
+}
+
+.shop__header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--color-bg);
+  padding: var(--space-4) var(--space-4) var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.shop__title-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.shop__title {
+  font-size: var(--font-size-xxl);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+  margin: 0;
+}
+
+.shop__count {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+}
+
+.shop__range {
+  margin: var(--space-1) 0 0;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.shop__review-count {
+  color: var(--color-warning);
+  font-weight: var(--font-weight-medium);
+}
+
+.shop__empty-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  align-items: stretch;
+}
+
+.shop__group {
+  padding: var(--space-4) var(--space-4) 0;
+}
+
+.shop__group-title {
+  margin: 0 0 var(--space-2);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-secondary);
+}
+
+.shop__lines {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.shop__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding-right: var(--space-2);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.shop__row:last-child {
+  border-bottom: 0;
+}
+
+/* The tick target is deliberately huge: this is used one-handed, walking. */
+.shop__tick {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 52px;
+  padding: var(--space-3);
+  border: 0;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.shop__tick:active {
+  background: var(--color-primary-soft);
+}
+
+.shop__checkbox {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-on-primary);
+}
+
+.shop__row.is-ticked .shop__checkbox {
+  background: var(--color-success);
+  border-color: var(--color-success);
+}
+
+.shop__row-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.shop__row-name {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.shop__row-qty {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.shop__row.is-ticked .shop__row-name,
+.shop__row.is-ticked .shop__row-qty {
+  color: var(--color-text-secondary);
+  text-decoration: line-through;
+}
+
+.shop__row--orphan {
+  padding: var(--space-3);
+  justify-content: space-between;
+  color: var(--color-text-secondary);
+  text-decoration: line-through;
+}
+
+.shop__row-flags {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.chip--warning {
+  background: var(--color-warning-soft);
+  color: var(--color-warning);
+  border: 0;
+  font: inherit;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+
+.shop__info {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.shop__staples-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.shop__add {
+  display: flex;
+  gap: var(--space-2);
+  padding: var(--space-5) var(--space-4) 0;
+}
+
+.shop__add input {
+  flex: 1;
+  min-width: 0;
+  min-height: var(--touch-target-min);
+  padding: 0 var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  font: inherit;
+  font-size: var(--font-size-md);
+  color: var(--color-text);
+}
+
+/* --- provenance ----------------------------------------------------------- */
+
+.provenance__total {
+  margin: 0 0 var(--space-3);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+}
+
+.provenance__note {
+  margin: 0 0 var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--color-warning-soft);
+  color: var(--color-warning);
+  font-size: var(--font-size-sm);
+}
+
+.provenance__link {
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-weight: var(--font-weight-bold);
+  color: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+}
+
+.provenance__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 50vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.provenance__item {
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.provenance__item:last-child {
+  border-bottom: 0;
+}
+
+.provenance__raw {
+  font-size: var(--font-size-sm);
+}
+
+.provenance__meta {
+  margin-top: 2px;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+/* --- pack size prompt ----------------------------------------------------- */
+
+.pack-prompt__hint {
+  margin: 0 0 var(--space-4);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.pack-prompt__options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.pack-prompt__option {
+  min-height: var(--touch-target-min);
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--font-size-md);
+  cursor: pointer;
+  border: 1px solid var(--color-border);
+}
