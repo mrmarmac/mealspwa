@@ -1,0 +1,452 @@
+{
+  "seeds": [
+    {
+      "itemKey": "chickpea",
+      "container": "can",
+      "size": 400,
+      "unit": "g",
+      "assumed": true
+    },
+    {
+      "itemKey": "tomato",
+      "container": "can",
+      "size": 400,
+      "unit": "g",
+      "assumed": true
+    },
+    {
+      "itemKey": "tinned tomato",
+      "container": "can",
+      "size": 400,
+      "unit": "g",
+      "assumed": true
+    },
+    {
+      "itemKey": "chopped tomato",
+      "container": "can",
+      "size": 400,
+      "unit": "g",
+      "assumed": true
+    },
+    {
+      "itemKey": "plum tomato",
+      "container": "can",
+      "size": 400,
+      "unit": "g",
+      "assumed": true
+    },
+    {
+      "itemKey": "butter bean",
+      "container": "can",
+      "size": 400,
+      "unit": "g",
+      "assumed": true
+    },
+    {
+      "itemKey": "cannellini bean",
+      "container": "can",
+      "size": 400,
+      "unit": "g",
+      "assumed": true
+    },
+    {
+      "itemKey": "black bean",
+      "container": "can",
+      "size": 400,
+      "unit": "g",
+      "assumed": true
+    },
+    {
+      "itemKey": "kidney bean",
+      "container": "can",
+      "size": 400,
+      "unit": "g",
+      "assumed": true
+    },
+    {
+      "itemKey": "borlotti bean",
+      "container": "can",
+      "size": 400,
+      "unit": "g",
+      "assumed": true
+    },
+    {
+      "itemKey": "haricot bean",
+      "container": "can",
+      "size": 400,
+      "unit": "g",
+      "assumed": true
+    },
+    {
+      "itemKey": "pinto bean",
+      "container": "can",
+      "size": 400,
+      "unit": "g",
+      "assumed": true
+    },
+    {
+      "itemKey": "baked bean",
+      "container": "can",
+      "size": 400,
+      "unit": "g",
+      "assumed": true
+    },
+    {
+      "itemKey": "mixed bean",
+      "container": "can",
+      "size": 400,
+      "unit": "g",
+      "assumed": true
+    },
+    {
+      "itemKey": "lentil",
+      "container": "can",
+      "size": 400,
+      "unit": "g",
+      "assumed": true
+    },
+    {
+      "itemKey": "green lentil",
+      "container": "can",
+      "size": 400,
+      "unit": "g",
+      "assumed": true
+    },
+    {
+      "itemKey": "coconut milk",
+      "container": "can",
+      "size": 400,
+      "unit": "ml",
+      "assumed": true
+    },
+    {
+      "itemKey": "full-fat coconut milk",
+      "container": "can",
+      "size": 400,
+      "unit": "ml",
+      "assumed": true
+    },
+    {
+      "itemKey": "coconut cream",
+      "container": "can",
+      "size": 400,
+      "unit": "ml",
+      "assumed": true
+    },
+    {
+      "itemKey": "tuna",
+      "container": "can",
+      "size": 145,
+      "unit": "g",
+      "assumed": true
+    },
+    {
+      "itemKey": "sardine",
+      "container": "can",
+      "size": 120,
+      "unit": "g",
+      "assumed": true
+    },
+    {
+      "itemKey": "anchovy",
+      "container": "can",
+      "size": 50,
+      "unit": "g",
+      "assumed": true
+    },
+    {
+      "itemKey": "sweetcorn",
+      "container": "can",
+      "size": 325,
+      "unit": "g",
+      "assumed": true
+    },
+    {
+      "itemKey": "passata",
+      "container": "carton",
+      "size": 500,
+      "unit": "g",
+      "assumed": true
+    },
+    {
+      "itemKey": "gnocchi",
+      "container": "packet",
+      "size": 500,
+      "unit": "g",
+      "assumed": true
+    },
+    {
+      "itemKey": "pasta",
+      "container": "packet",
+      "size": 500,
+      "unit": "g",
+      "assumed": true
+    },
+    {
+      "itemKey": "feta",
+      "container": "block",
+      "size": 200,
+      "unit": "g",
+      "assumed": true
+    },
+    {
+      "itemKey": "halloumi",
+      "container": "block",
+      "size": 225,
+      "unit": "g",
+      "assumed": true
+    },
+    {
+      "itemKey": "tofu",
+      "container": "block",
+      "size": 280,
+      "unit": "g",
+      "assumed": true
+    },
+    {
+      "itemKey": "cream cheese",
+      "container": "tub",
+      "size": 180,
+      "unit": "g",
+      "assumed": true
+    },
+    {
+      "itemKey": "soured cream",
+      "container": "tub",
+      "size": 300,
+      "unit": "g",
+      "assumed": true
+    },
+    {
+      "itemKey": "greek yoghurt",
+      "container": "tub",
+      "size": 500,
+      "unit": "g",
+      "assumed": true
+    },
+    {
+      "itemKey": "plain yoghurt",
+      "container": "tub",
+      "size": 500,
+      "unit": "g",
+      "assumed": true
+    },
+    {
+      "itemKey": "cottage cheese",
+      "container": "tub",
+      "size": 300,
+      "unit": "g",
+      "assumed": true
+    },
+    {
+      "itemKey": "double cream",
+      "container": "carton",
+      "size": 300,
+      "unit": "ml",
+      "assumed": true
+    },
+    {
+      "itemKey": "single cream",
+      "container": "carton",
+      "size": 300,
+      "unit": "ml",
+      "assumed": true
+    },
+    {
+      "itemKey": "milk",
+      "container": "bottle",
+      "size": 1000,
+      "unit": "ml",
+      "assumed": true
+    },
+    {
+      "itemKey": "oat milk",
+      "container": "carton",
+      "size": 1000,
+      "unit": "ml",
+      "assumed": true
+    },
+    {
+      "itemKey": "soy milk",
+      "container": "carton",
+      "size": 1000,
+      "unit": "ml",
+      "assumed": true
+    },
+    {
+      "itemKey": "vegetable stock",
+      "container": "carton",
+      "size": 500,
+      "unit": "ml",
+      "assumed": true
+    },
+    {
+      "itemKey": "cherry tomato",
+      "container": "punnet",
+      "size": 250,
+      "unit": "g",
+      "assumed": true
+    },
+    {
+      "itemKey": "tomato purée",
+      "container": "tub",
+      "size": 200,
+      "unit": "g",
+      "assumed": true
+    },
+    {
+      "itemKey": "spinach",
+      "container": "bag",
+      "size": 240,
+      "unit": "g",
+      "assumed": true
+    },
+    {
+      "itemKey": "frozen spinach",
+      "container": "packet",
+      "size": 900,
+      "unit": "g",
+      "assumed": true
+    },
+    {
+      "itemKey": "frozen pea",
+      "container": "bag",
+      "size": 900,
+      "unit": "g",
+      "assumed": true
+    },
+    {
+      "itemKey": "edamame bean",
+      "container": "bag",
+      "size": 400,
+      "unit": "g",
+      "assumed": true
+    },
+    {
+      "itemKey": "rocket",
+      "container": "bag",
+      "size": 100,
+      "unit": "g",
+      "assumed": true
+    },
+    {
+      "itemKey": "parsley",
+      "container": "bunch",
+      "size": 30,
+      "unit": "g",
+      "assumed": true
+    },
+    {
+      "itemKey": "coriander",
+      "container": "bunch",
+      "size": 30,
+      "unit": "g",
+      "assumed": true
+    },
+    {
+      "itemKey": "basil",
+      "container": "bunch",
+      "size": 30,
+      "unit": "g",
+      "assumed": true
+    },
+    {
+      "itemKey": "dill",
+      "container": "bunch",
+      "size": 30,
+      "unit": "g",
+      "assumed": true
+    },
+    {
+      "itemKey": "chive",
+      "container": "bunch",
+      "size": 20,
+      "unit": "g",
+      "assumed": true
+    },
+    {
+      "itemKey": "mint",
+      "container": "bunch",
+      "size": 30,
+      "unit": "g",
+      "assumed": true
+    },
+    {
+      "itemKey": "kale",
+      "container": "bunch",
+      "size": 200,
+      "unit": "g",
+      "assumed": true
+    },
+    {
+      "itemKey": "tuscan kale",
+      "container": "bunch",
+      "size": 200,
+      "unit": "g",
+      "assumed": true
+    },
+    {
+      "itemKey": "garlic",
+      "container": "clove",
+      "size": 5,
+      "unit": "g",
+      "assumed": true
+    },
+    {
+      "itemKey": "garlic",
+      "container": "head",
+      "size": 50,
+      "unit": "g",
+      "assumed": true
+    },
+    {
+      "itemKey": "celery",
+      "container": "stick",
+      "size": 40,
+      "unit": "g",
+      "assumed": true
+    },
+    {
+      "itemKey": "bacon",
+      "container": "rasher",
+      "size": 25,
+      "unit": "g",
+      "assumed": true
+    },
+    {
+      "itemKey": "butter",
+      "container": "block",
+      "size": 250,
+      "unit": "g",
+      "assumed": true
+    },
+    {
+      "itemKey": "quinoa",
+      "container": "packet",
+      "size": 500,
+      "unit": "g",
+      "assumed": true
+    },
+    {
+      "itemKey": "couscous",
+      "container": "packet",
+      "size": 500,
+      "unit": "g",
+      "assumed": true
+    },
+    {
+      "itemKey": "brown rice",
+      "container": "packet",
+      "size": 250,
+      "unit": "g",
+      "assumed": true
+    },
+    {
+      "itemKey": "rice",
+      "container": "packet",
+      "size": 500,
+      "unit": "g",
+      "assumed": true
+    }
+  ]
+}

@@ -1,0 +1,895 @@
+{
+  "aliases": {
+    "mg": {
+      "code": "mg",
+      "kind": "mass"
+    },
+    "mgs": {
+      "code": "mg",
+      "kind": "mass"
+    },
+    "milligram": {
+      "code": "mg",
+      "kind": "mass"
+    },
+    "milligrams": {
+      "code": "mg",
+      "kind": "mass"
+    },
+    "milligramme": {
+      "code": "mg",
+      "kind": "mass"
+    },
+    "milligrammes": {
+      "code": "mg",
+      "kind": "mass"
+    },
+    "g": {
+      "code": "g",
+      "kind": "mass"
+    },
+    "gs": {
+      "code": "g",
+      "kind": "mass"
+    },
+    "gr": {
+      "code": "g",
+      "kind": "mass"
+    },
+    "grs": {
+      "code": "g",
+      "kind": "mass"
+    },
+    "gm": {
+      "code": "g",
+      "kind": "mass"
+    },
+    "gms": {
+      "code": "g",
+      "kind": "mass"
+    },
+    "gram": {
+      "code": "g",
+      "kind": "mass"
+    },
+    "grams": {
+      "code": "g",
+      "kind": "mass"
+    },
+    "gramme": {
+      "code": "g",
+      "kind": "mass"
+    },
+    "grammes": {
+      "code": "g",
+      "kind": "mass"
+    },
+    "g.": {
+      "code": "g",
+      "kind": "mass"
+    },
+    "kg": {
+      "code": "kg",
+      "kind": "mass"
+    },
+    "kgs": {
+      "code": "kg",
+      "kind": "mass"
+    },
+    "kilo": {
+      "code": "kg",
+      "kind": "mass"
+    },
+    "kilos": {
+      "code": "kg",
+      "kind": "mass"
+    },
+    "kilogram": {
+      "code": "kg",
+      "kind": "mass"
+    },
+    "kilograms": {
+      "code": "kg",
+      "kind": "mass"
+    },
+    "kilogramme": {
+      "code": "kg",
+      "kind": "mass"
+    },
+    "kilogrammes": {
+      "code": "kg",
+      "kind": "mass"
+    },
+    "kg.": {
+      "code": "kg",
+      "kind": "mass"
+    },
+    "oz": {
+      "code": "oz",
+      "kind": "mass"
+    },
+    "ozs": {
+      "code": "oz",
+      "kind": "mass"
+    },
+    "oz.": {
+      "code": "oz",
+      "kind": "mass"
+    },
+    "ounce": {
+      "code": "oz",
+      "kind": "mass"
+    },
+    "ounces": {
+      "code": "oz",
+      "kind": "mass"
+    },
+    "lb": {
+      "code": "lb",
+      "kind": "mass"
+    },
+    "lbs": {
+      "code": "lb",
+      "kind": "mass"
+    },
+    "lb.": {
+      "code": "lb",
+      "kind": "mass"
+    },
+    "pound": {
+      "code": "lb",
+      "kind": "mass"
+    },
+    "pounds": {
+      "code": "lb",
+      "kind": "mass"
+    },
+    "#": {
+      "code": "lb",
+      "kind": "mass"
+    },
+    "ml": {
+      "code": "ml",
+      "kind": "volume"
+    },
+    "mls": {
+      "code": "ml",
+      "kind": "volume"
+    },
+    "ml.": {
+      "code": "ml",
+      "kind": "volume"
+    },
+    "millilitre": {
+      "code": "ml",
+      "kind": "volume"
+    },
+    "millilitres": {
+      "code": "ml",
+      "kind": "volume"
+    },
+    "milliliter": {
+      "code": "ml",
+      "kind": "volume"
+    },
+    "milliliters": {
+      "code": "ml",
+      "kind": "volume"
+    },
+    "cc": {
+      "code": "ml",
+      "kind": "volume"
+    },
+    "l": {
+      "code": "l",
+      "kind": "volume"
+    },
+    "ltr": {
+      "code": "l",
+      "kind": "volume"
+    },
+    "ltrs": {
+      "code": "l",
+      "kind": "volume"
+    },
+    "litre": {
+      "code": "l",
+      "kind": "volume"
+    },
+    "litres": {
+      "code": "l",
+      "kind": "volume"
+    },
+    "liter": {
+      "code": "l",
+      "kind": "volume"
+    },
+    "liters": {
+      "code": "l",
+      "kind": "volume"
+    },
+    "l.": {
+      "code": "l",
+      "kind": "volume"
+    },
+    "tsp": {
+      "code": "tsp",
+      "kind": "volume"
+    },
+    "tsps": {
+      "code": "tsp",
+      "kind": "volume"
+    },
+    "tsp.": {
+      "code": "tsp",
+      "kind": "volume"
+    },
+    "tspn": {
+      "code": "tsp",
+      "kind": "volume"
+    },
+    "tspns": {
+      "code": "tsp",
+      "kind": "volume"
+    },
+    "t": {
+      "code": "tsp",
+      "kind": "volume"
+    },
+    "teaspoon": {
+      "code": "tsp",
+      "kind": "volume"
+    },
+    "teaspoons": {
+      "code": "tsp",
+      "kind": "volume"
+    },
+    "teaspoonful": {
+      "code": "tsp",
+      "kind": "volume"
+    },
+    "teaspoonfuls": {
+      "code": "tsp",
+      "kind": "volume"
+    },
+    "teasp": {
+      "code": "tsp",
+      "kind": "volume"
+    },
+    "ts": {
+      "code": "tsp",
+      "kind": "volume"
+    },
+    "tbsp": {
+      "code": "tbsp",
+      "kind": "volume"
+    },
+    "tbsps": {
+      "code": "tbsp",
+      "kind": "volume"
+    },
+    "tbsp.": {
+      "code": "tbsp",
+      "kind": "volume"
+    },
+    "tbspn": {
+      "code": "tbsp",
+      "kind": "volume"
+    },
+    "tbspns": {
+      "code": "tbsp",
+      "kind": "volume"
+    },
+    "tbs": {
+      "code": "tbsp",
+      "kind": "volume"
+    },
+    "tbs.": {
+      "code": "tbsp",
+      "kind": "volume"
+    },
+    "tb": {
+      "code": "tbsp",
+      "kind": "volume"
+    },
+    "tbl": {
+      "code": "tbsp",
+      "kind": "volume"
+    },
+    "tbls": {
+      "code": "tbsp",
+      "kind": "volume"
+    },
+    "tblsp": {
+      "code": "tbsp",
+      "kind": "volume"
+    },
+    "tblspn": {
+      "code": "tbsp",
+      "kind": "volume"
+    },
+    "T": {
+      "code": "tbsp",
+      "kind": "volume"
+    },
+    "tablespoon": {
+      "code": "tbsp",
+      "kind": "volume"
+    },
+    "tablespoons": {
+      "code": "tbsp",
+      "kind": "volume"
+    },
+    "tablespoonful": {
+      "code": "tbsp",
+      "kind": "volume"
+    },
+    "tablespoonfuls": {
+      "code": "tbsp",
+      "kind": "volume"
+    },
+    "dsp": {
+      "code": "tbsp",
+      "kind": "volume"
+    },
+    "dessertspoon": {
+      "code": "tbsp",
+      "kind": "volume"
+    },
+    "dessertspoons": {
+      "code": "tbsp",
+      "kind": "volume"
+    },
+    "cup": {
+      "code": "cup",
+      "kind": "volume"
+    },
+    "cups": {
+      "code": "cup",
+      "kind": "volume"
+    },
+    "c": {
+      "code": "cup",
+      "kind": "volume"
+    },
+    "cupful": {
+      "code": "cup",
+      "kind": "volume"
+    },
+    "cupfuls": {
+      "code": "cup",
+      "kind": "volume"
+    },
+    "floz": {
+      "code": "floz",
+      "kind": "volume"
+    },
+    "flozs": {
+      "code": "floz",
+      "kind": "volume"
+    },
+    "fl oz": {
+      "code": "floz",
+      "kind": "volume"
+    },
+    "fl. oz": {
+      "code": "floz",
+      "kind": "volume"
+    },
+    "fl.oz": {
+      "code": "floz",
+      "kind": "volume"
+    },
+    "fl oz.": {
+      "code": "floz",
+      "kind": "volume"
+    },
+    "fluid ounce": {
+      "code": "floz",
+      "kind": "volume"
+    },
+    "fluid ounces": {
+      "code": "floz",
+      "kind": "volume"
+    },
+    "fl ounce": {
+      "code": "floz",
+      "kind": "volume"
+    },
+    "fl ounces": {
+      "code": "floz",
+      "kind": "volume"
+    },
+    "pint": {
+      "code": "pint",
+      "kind": "volume"
+    },
+    "pints": {
+      "code": "pint",
+      "kind": "volume"
+    },
+    "pt": {
+      "code": "pint",
+      "kind": "volume"
+    },
+    "pts": {
+      "code": "pint",
+      "kind": "volume"
+    },
+    "quart": {
+      "code": "quart",
+      "kind": "volume"
+    },
+    "quarts": {
+      "code": "quart",
+      "kind": "volume"
+    },
+    "qt": {
+      "code": "quart",
+      "kind": "volume"
+    },
+    "qts": {
+      "code": "quart",
+      "kind": "volume"
+    },
+    "gallon": {
+      "code": "gallon",
+      "kind": "volume"
+    },
+    "gallons": {
+      "code": "gallon",
+      "kind": "volume"
+    },
+    "gal": {
+      "code": "gallon",
+      "kind": "volume"
+    },
+    "gals": {
+      "code": "gallon",
+      "kind": "volume"
+    },
+    "can": {
+      "code": "can",
+      "kind": "count"
+    },
+    "cans": {
+      "code": "can",
+      "kind": "count"
+    },
+    "tin": {
+      "code": "can",
+      "kind": "count"
+    },
+    "tins": {
+      "code": "can",
+      "kind": "count"
+    },
+    "tinned": {
+      "code": "can",
+      "kind": "count"
+    },
+    "canned": {
+      "code": "can",
+      "kind": "count"
+    },
+    "jar": {
+      "code": "jar",
+      "kind": "count"
+    },
+    "jars": {
+      "code": "jar",
+      "kind": "count"
+    },
+    "jarred": {
+      "code": "jar",
+      "kind": "count"
+    },
+    "packet": {
+      "code": "packet",
+      "kind": "count"
+    },
+    "packets": {
+      "code": "packet",
+      "kind": "count"
+    },
+    "pack": {
+      "code": "packet",
+      "kind": "count"
+    },
+    "packs": {
+      "code": "packet",
+      "kind": "count"
+    },
+    "package": {
+      "code": "packet",
+      "kind": "count"
+    },
+    "packages": {
+      "code": "packet",
+      "kind": "count"
+    },
+    "pkt": {
+      "code": "packet",
+      "kind": "count"
+    },
+    "pkts": {
+      "code": "packet",
+      "kind": "count"
+    },
+    "sachet": {
+      "code": "packet",
+      "kind": "count"
+    },
+    "sachets": {
+      "code": "packet",
+      "kind": "count"
+    },
+    "bottle": {
+      "code": "bottle",
+      "kind": "count"
+    },
+    "bottles": {
+      "code": "bottle",
+      "kind": "count"
+    },
+    "block": {
+      "code": "block",
+      "kind": "count"
+    },
+    "blocks": {
+      "code": "block",
+      "kind": "count"
+    },
+    "tub": {
+      "code": "tub",
+      "kind": "count"
+    },
+    "tubs": {
+      "code": "tub",
+      "kind": "count"
+    },
+    "pot": {
+      "code": "tub",
+      "kind": "count"
+    },
+    "pots": {
+      "code": "tub",
+      "kind": "count"
+    },
+    "box": {
+      "code": "box",
+      "kind": "count"
+    },
+    "boxes": {
+      "code": "box",
+      "kind": "count"
+    },
+    "bag": {
+      "code": "bag",
+      "kind": "count"
+    },
+    "bags": {
+      "code": "bag",
+      "kind": "count"
+    },
+    "punnet": {
+      "code": "punnet",
+      "kind": "count"
+    },
+    "punnets": {
+      "code": "punnet",
+      "kind": "count"
+    },
+    "carton": {
+      "code": "carton",
+      "kind": "count"
+    },
+    "cartons": {
+      "code": "carton",
+      "kind": "count"
+    },
+    "bunch": {
+      "code": "bunch",
+      "kind": "count"
+    },
+    "bunches": {
+      "code": "bunch",
+      "kind": "count"
+    },
+    "head": {
+      "code": "head",
+      "kind": "count"
+    },
+    "heads": {
+      "code": "head",
+      "kind": "count"
+    },
+    "clove": {
+      "code": "clove",
+      "kind": "count"
+    },
+    "cloves": {
+      "code": "clove",
+      "kind": "count"
+    },
+    "sprig": {
+      "code": "sprig",
+      "kind": "count"
+    },
+    "sprigs": {
+      "code": "sprig",
+      "kind": "count"
+    },
+    "stick": {
+      "code": "stick",
+      "kind": "count"
+    },
+    "sticks": {
+      "code": "stick",
+      "kind": "count"
+    },
+    "stalk": {
+      "code": "stalk",
+      "kind": "count"
+    },
+    "stalks": {
+      "code": "stalk",
+      "kind": "count"
+    },
+    "slice": {
+      "code": "slice",
+      "kind": "count"
+    },
+    "slices": {
+      "code": "slice",
+      "kind": "count"
+    },
+    "sheet": {
+      "code": "sheet",
+      "kind": "count"
+    },
+    "sheets": {
+      "code": "sheet",
+      "kind": "count"
+    },
+    "rasher": {
+      "code": "rasher",
+      "kind": "count"
+    },
+    "rashers": {
+      "code": "rasher",
+      "kind": "count"
+    },
+    "fillet": {
+      "code": "fillet",
+      "kind": "count"
+    },
+    "fillets": {
+      "code": "fillet",
+      "kind": "count"
+    },
+    "filet": {
+      "code": "fillet",
+      "kind": "count"
+    },
+    "filets": {
+      "code": "fillet",
+      "kind": "count"
+    },
+    "each": {
+      "code": "each",
+      "kind": "count"
+    },
+    "ea": {
+      "code": "each",
+      "kind": "count"
+    },
+    "whole": {
+      "code": "each",
+      "kind": "count"
+    },
+    "piece": {
+      "code": "each",
+      "kind": "count"
+    },
+    "pieces": {
+      "code": "each",
+      "kind": "count"
+    },
+    "x": {
+      "code": "each",
+      "kind": "count"
+    },
+    "pinch": {
+      "code": "pinch",
+      "kind": "imprecise"
+    },
+    "pinches": {
+      "code": "pinch",
+      "kind": "imprecise"
+    },
+    "dash": {
+      "code": "dash",
+      "kind": "imprecise"
+    },
+    "dashes": {
+      "code": "dash",
+      "kind": "imprecise"
+    },
+    "splash": {
+      "code": "splash",
+      "kind": "imprecise"
+    },
+    "splashes": {
+      "code": "splash",
+      "kind": "imprecise"
+    },
+    "handful": {
+      "code": "handful",
+      "kind": "imprecise"
+    },
+    "handfuls": {
+      "code": "handful",
+      "kind": "imprecise"
+    },
+    "handfull": {
+      "code": "handful",
+      "kind": "imprecise"
+    },
+    "glug": {
+      "code": "glug",
+      "kind": "imprecise"
+    },
+    "glugs": {
+      "code": "glug",
+      "kind": "imprecise"
+    },
+    "knob": {
+      "code": "knob",
+      "kind": "imprecise"
+    },
+    "knobs": {
+      "code": "knob",
+      "kind": "imprecise"
+    },
+    "drizzle": {
+      "code": "drizzle",
+      "kind": "imprecise"
+    },
+    "drizzles": {
+      "code": "drizzle",
+      "kind": "imprecise"
+    }
+  },
+  "containerAliases": {
+    "can": [
+      "can",
+      "cans",
+      "tin",
+      "tins",
+      "tinned",
+      "canned"
+    ],
+    "jar": [
+      "jar",
+      "jars",
+      "jarred"
+    ],
+    "packet": [
+      "packet",
+      "packets",
+      "pack",
+      "packs",
+      "package",
+      "packages",
+      "pkt",
+      "pkts",
+      "sachet",
+      "sachets"
+    ],
+    "bottle": [
+      "bottle",
+      "bottles"
+    ],
+    "block": [
+      "block",
+      "blocks"
+    ],
+    "tub": [
+      "tub",
+      "tubs",
+      "pot",
+      "pots"
+    ],
+    "box": [
+      "box",
+      "boxes"
+    ],
+    "bag": [
+      "bag",
+      "bags"
+    ],
+    "punnet": [
+      "punnet",
+      "punnets"
+    ],
+    "carton": [
+      "carton",
+      "cartons"
+    ],
+    "bunch": [
+      "bunch",
+      "bunches"
+    ],
+    "head": [
+      "head",
+      "heads"
+    ],
+    "clove": [
+      "clove",
+      "cloves"
+    ],
+    "sprig": [
+      "sprig",
+      "sprigs"
+    ],
+    "stick": [
+      "stick",
+      "sticks"
+    ],
+    "stalk": [
+      "stalk",
+      "stalks"
+    ],
+    "slice": [
+      "slice",
+      "slices"
+    ],
+    "sheet": [
+      "sheet",
+      "sheets"
+    ],
+    "rasher": [
+      "rasher",
+      "rashers"
+    ],
+    "fillet": [
+      "fillet",
+      "fillets",
+      "filet",
+      "filets"
+    ]
+  },
+  "base": {
+    "mass": {
+      "mg": 0.001,
+      "g": 1,
+      "kg": 1000,
+      "oz": 28.3495,
+      "lb": 453.592
+    },
+    "volume": {
+      "ml": 1,
+      "l": 1000,
+      "tsp": 5,
+      "tbsp": 15,
+      "cup": 250,
+      "floz": 28.41,
+      "pint": 568,
+      "quart": 1136.52,
+      "gallon": 4546.09
+    }
+  },
+  "dialectOverrides": {
+    "metric-au": {
+      "tbsp": 20
+    },
+    "us": {
+      "cup": 240,
+      "floz": 29.5735,
+      "pint": 473.176,
+      "quart": 946.353,
+      "gallon": 3785.41
+    }
+  }
+}
