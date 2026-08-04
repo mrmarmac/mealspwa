@@ -1,0 +1,294 @@
+@import './tokens.css';
+
+/* ---------------------------------------------------------------------- *
+ * Reset
+ * ---------------------------------------------------------------------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+html {
+  /* Respected on the bottom bar / sticky CTA via env(safe-area-inset-*)
+     below — this just opts the whole document into the safe-area env(). */
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-family);
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-normal);
+  -webkit-font-smoothing: antialiased;
+  /* A shopping-list scroll shouldn't rubber-band into a browser chrome
+     gesture or drag the whole page when a bottom sheet is mid-swipe. */
+  overscroll-behavior: contain;
+}
+
+img,
+picture,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+a {
+  color: inherit;
+}
+
+ul,
+ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+h1,
+h2,
+h3,
+h4,
+p {
+  margin: 0;
+}
+
+/* Respect the OS "reduce motion" accessibility setting everywhere at once —
+   individual components (BottomSheet, LongPressMenu, Toast) also check this
+   in JS for logic that isn't purely a CSS transition. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+/* ---------------------------------------------------------------------- *
+ * Tap targets
+ * This is a one-handed phone app used standing up in a supermarket aisle:
+ * every interactive element gets a real hit area and no hover-only states.
+ * ---------------------------------------------------------------------- */
+
+.tap-target {
+  min-height: var(--touch-target-min);
+  min-width: var(--touch-target-min);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* Long-press should open the app's own context menu (LongPressMenu), not
+     the browser/OS text-selection or "save image" menu. */
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  touch-action: manipulation;
+}
+
+/* ---------------------------------------------------------------------- *
+ * Utility shapes
+ * ---------------------------------------------------------------------- */
+
+.sheet {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  box-shadow: var(--shadow-lg);
+  padding: var(--space-2) 0 0;
+}
+
+.card {
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
+  padding: var(--space-4);
+}
+
+/* A row in a long list (recipe library, shopping list). Generous padding so
+   the tap area is comfortable and mis-taps are rare with one thumb. */
+.list-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 56px;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+.list-row + .list-row {
+  border-top: 1px solid var(--color-border);
+}
+
+.list-row:active {
+  background: var(--color-primary-soft);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  min-height: 32px;
+  border-radius: var(--radius-pill);
+  background: var(--color-primary-soft);
+  color: var(--color-primary-strong);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  border: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.chip--neutral {
+  background: var(--color-surface-raised);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+}
+
+/* Sticky action bar pinned to the bottom of a screen (e.g. "Start shopping",
+   "Save recipe"). Sits above the tab bar's safe-area padding. */
+.sticky-cta {
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4)
+    calc(var(--space-3) + env(safe-area-inset-bottom)) var(--space-4);
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+  box-shadow: var(--shadow-md);
+}
+
+.btn {
+  min-height: var(--touch-target-min);
+  padding: 0 var(--space-5);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+  transition: transform var(--motion-fast) var(--ease-standard),
+    opacity var(--motion-fast) var(--ease-standard);
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn--primary {
+  background: var(--color-primary);
+  color: var(--color-text-on-primary);
+}
+
+.btn--secondary {
+  background: var(--color-surface-raised);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+}
+
+.btn--block {
+  flex: 1;
+  width: 100%;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+@keyframes meals-sheet-backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes meals-sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes meals-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes meals-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spinner-ring {
+  animation: meals-spin 800ms linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner-ring {
+    animation: meals-spin 1600ms linear infinite;
+  }
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

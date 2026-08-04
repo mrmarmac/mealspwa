@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Meals</title>
+  <!--
+    Why this file exists:
+    The Web Share Target spec resolves `action` relative to the manifest's
+    scope and does NOT reliably deep-link into a hash route — browsers that
+    honour share_target navigate to the literal `action` URL, and a `#/capture`
+    fragment on that URL is not guaranteed to survive the share intent (some
+    platforms drop or re-encode the fragment before the page ever loads).
+    So the manifest's share_target.action points at this static, non-hash
+    path (`/mealspwa/share`) instead. This tiny page is the one thing that
+    *does* reliably receive `?title=&text=&url=` from the OS share sheet; it
+    then does the hash translation itself and replaces the location so the
+    SPA boots straight into the capture screen with the shared payload.
+  -->
+  <meta name="robots" content="noindex" />
+</head>
+<body>
+  <script>
+    // Forward whatever the share target sent (title/text/url) onto the SPA's
+    // hash route. `replace` so this redirect page never sits in history.
+    var search = window.location.search || '';
+    window.location.replace('/mealspwa/#/capture' + search);
+  </script>
+  <noscript>
+    <a href="/mealspwa/#/capture">Open Meals</a>
+  </noscript>
+</body>
+</html>

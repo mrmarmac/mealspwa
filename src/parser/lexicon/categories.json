@@ -1,0 +1,392 @@
+{
+  "exact": {
+    "coconut milk": "cans-jars",
+    "full-fat coconut milk": "cans-jars",
+    "coconut cream": "cans-jars",
+    "oat milk": "chilled-plant",
+    "almond milk": "chilled-plant",
+    "soy milk": "chilled-plant",
+    "soya milk": "chilled-plant",
+    "rice milk": "chilled-plant",
+    "cashew milk": "chilled-plant",
+    "condensed milk": "dry-goods",
+    "evaporated milk": "dry-goods",
+    "coconut yoghurt": "chilled-plant",
+    "salt": "staples",
+    "black pepper": "staples",
+    "pepper": "staples",
+    "salt and pepper": "staples",
+    "olive oil": "staples",
+    "extra-virgin olive oil": "staples",
+    "water": "staples",
+    "tomato purée": "cans-jars",
+    "passata": "cans-jars",
+    "cream cheese": "dairy-eggs",
+    "cottage cheese": "dairy-eggs",
+    "nutritional yeast": "dry-goods",
+    "sun-dried tomato": "cans-jars",
+    "pickled jalapeno": "cans-jars",
+    "tuna": "cans-jars",
+    "gnocchi": "chilled-plant",
+    "tofu": "chilled-plant",
+    "pumpkin seed": "dry-goods",
+    "sesame seed": "dry-goods",
+    "sunflower seed": "dry-goods",
+    "cherry tomato": "produce",
+    "vegetable stock": "dry-goods",
+    "lemon juice": "produce",
+    "lime juice": "produce",
+    "orange juice": "drinks"
+  },
+  "keywordRules": [
+    {
+      "match": "frozen",
+      "where": "prefix",
+      "category": "frozen"
+    },
+    {
+      "match": "milk",
+      "where": "suffix",
+      "category": "dairy-eggs",
+      "not": [
+        "coconut",
+        "oat",
+        "almond",
+        "soy",
+        "soya",
+        "rice",
+        "cashew",
+        "hemp",
+        "condensed",
+        "evaporated"
+      ]
+    },
+    {
+      "match": "cheese",
+      "where": "suffix",
+      "category": "dairy-eggs",
+      "not": [
+        "vegan"
+      ]
+    },
+    {
+      "match": "yoghurt",
+      "where": "suffix",
+      "category": "dairy-eggs",
+      "not": [
+        "vegan",
+        "coconut",
+        "soy",
+        "soya"
+      ]
+    },
+    {
+      "match": "cream",
+      "where": "suffix",
+      "category": "dairy-eggs",
+      "not": [
+        "vegan",
+        "oat",
+        "coconut",
+        "ice",
+        "sour"
+      ]
+    },
+    {
+      "match": "sauce",
+      "where": "suffix",
+      "category": "oils-sauces"
+    },
+    {
+      "match": "paste",
+      "where": "suffix",
+      "category": "oils-sauces",
+      "not": [
+        "tomato"
+      ]
+    },
+    {
+      "match": "vinegar",
+      "where": "suffix",
+      "category": "oils-sauces"
+    },
+    {
+      "match": "oil",
+      "where": "suffix",
+      "category": "oils-sauces"
+    },
+    {
+      "match": "syrup",
+      "where": "suffix",
+      "category": "oils-sauces"
+    },
+    {
+      "match": "mustard",
+      "where": "suffix",
+      "category": "oils-sauces"
+    },
+    {
+      "match": "flour",
+      "where": "suffix",
+      "category": "dry-goods"
+    },
+    {
+      "match": "sugar",
+      "where": "suffix",
+      "category": "dry-goods"
+    },
+    {
+      "match": "rice",
+      "where": "suffix",
+      "category": "dry-goods"
+    },
+    {
+      "match": "pasta",
+      "where": "suffix",
+      "category": "dry-goods"
+    },
+    {
+      "match": "noodle",
+      "where": "suffix",
+      "category": "dry-goods"
+    },
+    {
+      "match": "lentil",
+      "where": "suffix",
+      "category": "dry-goods"
+    },
+    {
+      "match": "seed",
+      "where": "suffix",
+      "category": "dry-goods",
+      "not": [
+        "pomegranate"
+      ]
+    },
+    {
+      "match": "nut",
+      "where": "suffix",
+      "category": "dry-goods",
+      "not": [
+        "pine"
+      ]
+    },
+    {
+      "match": "bean",
+      "where": "suffix",
+      "category": "cans-jars",
+      "not": [
+        "green",
+        "runner",
+        "broad",
+        "vanilla"
+      ]
+    },
+    {
+      "match": "stock",
+      "where": "suffix",
+      "category": "dry-goods"
+    },
+    {
+      "match": "powder",
+      "where": "suffix",
+      "category": "herbs-spices",
+      "not": [
+        "baking",
+        "cocoa",
+        "custard",
+        "protein"
+      ]
+    },
+    {
+      "match": "herb",
+      "where": "suffix",
+      "category": "herbs-spices"
+    },
+    {
+      "match": "spice",
+      "where": "suffix",
+      "category": "herbs-spices"
+    },
+    {
+      "match": "pepper",
+      "where": "suffix",
+      "category": "herbs-spices",
+      "not": [
+        "bell",
+        "red",
+        "green",
+        "yellow",
+        "orange",
+        "roasted",
+        "sweet"
+      ]
+    },
+    {
+      "match": "bread",
+      "where": "suffix",
+      "category": "bakery"
+    },
+    {
+      "match": "juice",
+      "where": "suffix",
+      "category": "produce"
+    },
+    {
+      "match": "wine",
+      "where": "suffix",
+      "category": "drinks"
+    },
+    {
+      "match": "tomato",
+      "where": "suffix",
+      "category": "produce"
+    },
+    {
+      "match": "onion",
+      "where": "suffix",
+      "category": "produce"
+    }
+  ],
+  "pantryStaples": [
+    "salt",
+    "sea salt",
+    "black pepper",
+    "pepper",
+    "white pepper",
+    "salt and pepper",
+    "olive oil",
+    "extra-virgin olive oil",
+    "vegetable oil",
+    "sunflower oil",
+    "rapeseed oil",
+    "oil",
+    "water",
+    "plain flour",
+    "sugar",
+    "caster sugar",
+    "baking powder",
+    "bicarbonate of soda",
+    "vinegar",
+    "stock cube",
+    "peppercorn"
+  ],
+  "halvable": [
+    "lemon",
+    "lime",
+    "onion",
+    "red onion",
+    "white onion",
+    "brown onion",
+    "yellow onion",
+    "avocado",
+    "cucumber",
+    "pepper",
+    "red pepper",
+    "green pepper",
+    "yellow pepper",
+    "orange pepper",
+    "courgette",
+    "aubergine",
+    "orange",
+    "grapefruit",
+    "cabbage",
+    "red cabbage",
+    "white cabbage",
+    "cauliflower",
+    "broccoli",
+    "melon",
+    "pineapple",
+    "butternut squash",
+    "swede",
+    "celeriac",
+    "fennel",
+    "bunch",
+    "baguette",
+    "sourdough"
+  ],
+  "distinguishing": [
+    "red",
+    "green",
+    "yellow",
+    "orange",
+    "white",
+    "black",
+    "brown",
+    "purple",
+    "golden",
+    "cherry",
+    "plum",
+    "vine",
+    "baby",
+    "wild",
+    "tuscan",
+    "sweet",
+    "sour",
+    "hot",
+    "mild",
+    "smoked",
+    "ground",
+    "dried",
+    "fresh",
+    "frozen",
+    "tinned",
+    "canned",
+    "jarred",
+    "plain",
+    "self-raising",
+    "wholemeal",
+    "wholegrain",
+    "full-fat",
+    "low-fat",
+    "semi-skimmed",
+    "skimmed",
+    "extra-virgin",
+    "virgin",
+    "light",
+    "double",
+    "single",
+    "unsalted",
+    "salted",
+    "raw",
+    "roasted",
+    "toasted",
+    "pickled",
+    "flaked",
+    "crushed",
+    "chopped",
+    "sliced",
+    "grated",
+    "minced",
+    "vegan",
+    "gluten-free",
+    "organic",
+    "king",
+    "spring",
+    "butter",
+    "black-eyed",
+    "cannellini",
+    "borlotti",
+    "kidney",
+    "sun-dried",
+    "basmati",
+    "brown",
+    "sushi",
+    "arborio",
+    "jasmine",
+    "icing",
+    "caster",
+    "jarred",
+    "canned",
+    "tinned",
+    "assorted",
+    "mixed",
+    "salted",
+    "unsalted",
+    "shelled",
+    "stuffed",
+    "marinated",
+    "skinned",
+    "boned"
+  ]
+}
