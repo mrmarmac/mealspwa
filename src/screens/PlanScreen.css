@@ -13,29 +13,23 @@
   top: 0;
   z-index: 10;
   background: var(--color-bg);
-  padding: var(--space-4) var(--space-4) var(--space-2);
+  padding: var(--space-2) var(--space-3);
   border-bottom: 1px solid var(--color-border);
 }
 
+/* A single row: delete on the left, the date range centred, the range toggle
+   on the right. Equal 1fr side columns via `auto 1fr auto` keep the date
+   range centred in the space between the delete button and the toggle. */
 .plan__title-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: var(--space-2) var(--space-3);
+  gap: var(--space-2);
 }
 
-.plan__title {
-  flex: 0 0 auto;
-  font-size: var(--font-size-xxl);
-  font-weight: var(--font-weight-bold);
-  line-height: var(--line-height-tight);
-  margin: 0;
-}
-
-/* Date range now lives in the title row and jumps back to this week. */
+/* Date range lives in the centre of the header row and jumps back to this
+   week. */
 .plan__today {
-  flex: 1 1 auto;
   min-width: 0;
   border: 0;
   background: transparent;
@@ -44,13 +38,14 @@
   font-weight: var(--font-weight-medium);
   color: var(--color-text-secondary);
   text-align: center;
-  padding: var(--space-2) var(--space-3);
+  padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-pill);
   cursor: pointer;
   white-space: nowrap;
 }
 
 .plan__range {
+  justify-self: end;
   display: flex;
   background: var(--color-primary-soft);
   border-radius: var(--radius-pill);
@@ -64,7 +59,7 @@
   font: inherit;
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-medium);
-  padding: var(--space-2) var(--space-3);
+  padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-pill);
   cursor: pointer;
 }
@@ -75,18 +70,13 @@
   box-shadow: var(--shadow-sm);
 }
 
-.plan__title-actions {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-}
-
 .plan__clear {
+  justify-self: start;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: var(--touch-target-min);
-  height: var(--touch-target-min);
+  width: 36px;
+  height: 36px;
   border: 0;
   background: transparent;
   color: var(--color-text-secondary);
@@ -212,29 +202,6 @@
   margin: 0;
   color: var(--color-text-secondary);
   font-size: var(--font-size-sm);
-}
-
-.plan__nav-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 0;
-  background: transparent;
-  color: var(--color-text-secondary);
-  border-radius: var(--radius-pill);
-  cursor: pointer;
-}
-
-.plan__nav-today {
-  border: 0;
-  background: transparent;
-  font: inherit;
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  color: var(--color-text-secondary);
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-pill);
-  cursor: pointer;
 }
 
 .plan__board {
@@ -458,7 +425,7 @@
    44px iOS minimum. We shrink the gaps and chrome, never the hit areas. */
 @media (max-width: 599px) {
   .plan__board {
-    padding: var(--space-2) var(--space-1) 0;
+    padding: var(--space-1) var(--space-1) 0;
   }
 
   .plan__week-nav {
@@ -467,20 +434,44 @@
 
   .plan__day {
     gap: var(--space-2);
-    padding: var(--space-2) 0;
+    padding: var(--space-1) 0;
   }
 
   .plan__day-heading {
-    flex-basis: 36px;
+    flex-basis: 34px;
     padding-top: 0;
   }
 
+  .plan__day-name {
+    font-size: 11px;
+  }
+
+  .plan__day-num {
+    font-size: var(--font-size-md);
+  }
+
+  .plan__day.is-today .plan__day-num {
+    min-width: 26px;
+    height: 26px;
+  }
+
   .plan__day-slots {
-    gap: var(--space-2);
+    gap: var(--space-1);
   }
 
   .plan__slot {
     gap: var(--space-1);
+  }
+
+  /* Slots are shrunk so Mon–Sat fit on one screen with Sunday peeking beneath
+     the (semi-transparent) tab bar. The hit area is still comfortable. */
+  .plan__empty,
+  .meal-card,
+  .plan__place-leftover,
+  .plan__slot-blocked {
+    min-height: 36px;
+    padding: var(--space-1) var(--space-3);
+    font-size: var(--font-size-xs);
   }
 }
 

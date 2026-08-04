@@ -222,45 +222,42 @@ export default function PlanScreen() {
     <div className="plan">
       <header className="plan__header">
         <div className="plan__title-row">
-          <h1 className="plan__title">Plan</h1>
+          <button
+            type="button"
+            className="plan__clear tap-target"
+            onClick={() => setConfirmClear(true)}
+            disabled={!hasPlacements}
+            aria-label="Clear this week"
+          >
+            <Icon name="trash" size={18} />
+          </button>
           <button
             type="button"
             className="plan__today"
             onClick={() => setWeekAnchor(today)}
             aria-label="Jump to this week"
           >
-            {fromISODate(weekStart).toLocaleDateString(undefined, { month: 'long', day: 'numeric' })}
+            {fromISODate(weekStart).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
             {' – '}
-            {fromISODate(rangeEnd).toLocaleDateString(undefined, { month: 'long', day: 'numeric' })}
+            {fromISODate(rangeEnd).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
           </button>
-          <div className="plan__title-actions">
+          <div className="plan__range" role="group" aria-label="Plan range">
             <button
               type="button"
-              className="plan__clear tap-target"
-              onClick={() => setConfirmClear(true)}
-              disabled={!hasPlacements}
-              aria-label="Clear this week"
+              className={`plan__range-btn ${rangeDays === 7 ? 'is-active' : ''}`}
+              onClick={() => setRangeDays(7)}
+              aria-pressed={rangeDays === 7}
             >
-              <Icon name="trash" size={18} />
+              Week
             </button>
-            <div className="plan__range" role="group" aria-label="Plan range">
-              <button
-                type="button"
-                className={`plan__range-btn ${rangeDays === 7 ? 'is-active' : ''}`}
-                onClick={() => setRangeDays(7)}
-                aria-pressed={rangeDays === 7}
-              >
-                Week
-              </button>
-              <button
-                type="button"
-                className={`plan__range-btn ${rangeDays === 14 ? 'is-active' : ''}`}
-                onClick={() => setRangeDays(14)}
-                aria-pressed={rangeDays === 14}
-              >
-                Fortnight
-              </button>
-            </div>
+            <button
+              type="button"
+              className={`plan__range-btn ${rangeDays === 14 ? 'is-active' : ''}`}
+              onClick={() => setRangeDays(14)}
+              aria-pressed={rangeDays === 14}
+            >
+              Fortnight
+            </button>
           </div>
         </div>
       </header>

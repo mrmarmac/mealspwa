@@ -44,7 +44,12 @@ export function AppShell() {
           bottom: 0,
           zIndex: 100, // keep in sync with --z-bottom-bar in tokens.css
           display: 'flex',
-          background: 'var(--color-surface)',
+          // 50% transparent so a little of the plan (e.g. Sunday) shows through
+          // beneath the bar. The tabs themselves stay opaque and tappable; only
+          // the surrounding whitespace lets the content behind peek through.
+          background: 'color-mix(in srgb, var(--color-surface) 50%, transparent)',
+          backdropFilter: 'blur(8px)',
+          WebkitBackdropFilter: 'blur(8px)',
           borderTop: '1px solid var(--color-border)',
           paddingBottom: 'env(safe-area-inset-bottom)',
         }}
