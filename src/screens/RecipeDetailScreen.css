@@ -123,3 +123,12 @@
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
 }
+
+/* Desktop: tighter ingredient rows — ~20% shorter and a slightly smaller font
+   than the phone layout, which has more room to spare. */
+@media (min-width: 900px) {
+  .detail__ingredient {
+    padding: var(--space-2) var(--space-3);
+    font-size: 14px;
+  }
+}

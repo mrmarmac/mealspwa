@@ -5,7 +5,7 @@
  */
 import { create } from 'zustand';
 import { applyOverrides, parseIngredientBlock, PARSER_VERSION } from '@/parser';
-import { backfillRecipeTags, getRecipesBySpace, recipeRepo } from '@/db/repo';
+import { backfillRecipeTags, getRecipesBySpace, recipeRepo, reparseStaleRecipes } from '@/db/repo';
 import { uuidv7, type Id } from '@/domain/primitives';
 import {
   SCHEMA_VERSION,
@@ -111,6 +111,17 @@ export const useRecipeStore = create<RecipeStoreState>((set, get) => ({
     try {
       // One-time tidy-up of legacy rows missing `tags`; no-op once clean.
       await backfillRecipeTags(spaceId);
+      // Refresh the derived ingredient cache for rows parsed by an older parser
+      // version so parser changes (e.g. garlic → cloves) reach existing
+      // recipes' shopping lists; local-only, idempotent once caught up.
+      await reparseStaleRecipes(spaceId, PARSER_VERSION, (r) => ({
+        ...r,
+        ingredients: applyOverrides(
+          parseIngredientBlock(r.ingredientsRaw, { dialect: r.dialect ?? undefined }),
+          r.overrides,
+        ),
+        parserVersion: PARSER_VERSION,
+      }));
       const recipes = await getRecipesBySpace(spaceId);
       set({ recipes, loading: false, loaded: true });
     } catch (err) {

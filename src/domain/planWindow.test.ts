@@ -5,37 +5,37 @@ import { clampWeekStart, planWeekBounds, retentionCutoff } from './planWindow';
 const MONDAY = '2026-08-03';
 
 describe('planWeekBounds', () => {
-  it('is 4 weeks either side of the current week (Monday-anchored)', () => {
+  it('is 2 weeks either side of the current week (Monday-anchored)', () => {
     const { min, max } = planWeekBounds(MONDAY, 1);
-    expect(min).toBe('2026-07-06'); // 4 weeks before
-    expect(max).toBe('2026-08-31'); // 4 weeks after
+    expect(min).toBe('2026-07-20'); // 2 weeks before
+    expect(max).toBe('2026-08-17'); // 2 weeks after
   });
 
   it('anchors on the week start for a mid-week date', () => {
     const { min, max } = planWeekBounds('2026-08-06', 1); // Thursday
-    expect(min).toBe('2026-07-06');
-    expect(max).toBe('2026-08-31');
+    expect(min).toBe('2026-07-20');
+    expect(max).toBe('2026-08-17');
   });
 
   it('honours a Sunday-anchored week', () => {
     const { min, max } = planWeekBounds('2026-08-06', 0); // week start Sun 2026-08-02
-    expect(min).toBe('2026-07-05');
-    expect(max).toBe('2026-08-30');
+    expect(min).toBe('2026-07-19');
+    expect(max).toBe('2026-08-16');
   });
 });
 
 describe('clampWeekStart', () => {
   it('passes an in-range week-start through unchanged', () => {
     expect(clampWeekStart(MONDAY, MONDAY, 1)).toBe(MONDAY);
-    expect(clampWeekStart('2026-07-13', MONDAY, 1)).toBe('2026-07-13');
+    expect(clampWeekStart('2026-07-27', MONDAY, 1)).toBe('2026-07-27');
   });
 
   it('clamps below the minimum', () => {
-    expect(clampWeekStart('2026-01-01', MONDAY, 1)).toBe('2026-07-06');
+    expect(clampWeekStart('2026-01-01', MONDAY, 1)).toBe('2026-07-20');
   });
 
   it('clamps above the maximum', () => {
-    expect(clampWeekStart('2027-01-01', MONDAY, 1)).toBe('2026-08-31');
+    expect(clampWeekStart('2027-01-01', MONDAY, 1)).toBe('2026-08-17');
   });
 });
 

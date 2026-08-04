@@ -45,7 +45,7 @@ import {
 } from './tokenize';
 import { detectDialect, lookupUnit } from './units';
 
-export const PARSER_VERSION = 1;
+export const PARSER_VERSION = 2;
 
 export const PANTRY_STAPLES = new Set<string>(categoriesJson.pantryStaples);
 export const HALVABLE = new Set<string>(categoriesJson.halvable);
@@ -442,6 +442,15 @@ export function parseIngredientLine(
       .join('; ') || null;
 
   const canonical = canonicaliseItem(prep.item, aliases ? { aliases } : {});
+
+  // Garlic is only ever measured in cloves in this app — never grams or bare
+  // counts — so coerce the unit once we know the item is garlic (but not
+  // 'garlic powder', which canonicalises to its own itemKey).
+  if (canonical.itemKey === 'garlic') {
+    unit = 'clove';
+    unitKind = 'count';
+    unrecognisedUnit = false;
+  }
 
   // ---- qualifiers -------------------------------------------------------
   for (const q of extractQualifiers(text0, note)) {

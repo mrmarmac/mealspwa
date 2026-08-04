@@ -97,7 +97,7 @@ export default function RecipeDetailScreen() {
             onClick={() => navigate(`/capture?edit=${recipe.id}`)}
             aria-label="Edit recipe"
           >
-            <Icon name="camera" size={20} />
+            <Icon name="menu" size={20} />
           </button>
           <button
             type="button"
@@ -150,13 +150,14 @@ export default function RecipeDetailScreen() {
         open={confirmDelete}
         onClose={() => setConfirmDelete(false)}
         title={`Delete ${recipe.name}?`}
+        hideClose
       >
         <div className="detail__confirm">
           {/* The plan is the truth: deleting from the library never silently
               rewrites meals you already planned. */}
           <p>
-            Any meals you've already planned with it stay on the board, and its ingredients stay on
-            your shopping list.
+            This will delete it permanently from your recipes, but any meals you've already planned
+            with it will stay on the board and the ingredient will stay in the shopping list.
           </p>
           <button
             type="button"
