@@ -182,10 +182,36 @@ export function applyRemoteEntity(target: Repos, entity: Syncable): Promise<bool
 // byIndex helpers for the plan/shopping queries
 // ---------------------------------------------------------------------------
 
+/** Normalise a recipe read from storage so callers can rely on the invariant
+ *  that `tags` is always an array — rows written before the field existed lack
+ *  it at runtime despite the type. */
+function normalizeRecipe(r: Recipe): Recipe {
+  return r.tags ? r : { ...r, tags: [] };
+}
+
 export async function getRecipesBySpace(spaceId: Id, opts?: GetAllOptions): Promise<Recipe[]> {
   const db = await getDB();
   const rows = await db.getAllFromIndex('recipes', 'spaceId', spaceId);
-  return opts?.includeDeleted ? rows : rows.filter((r) => r.deletedAt === null);
+  const visible = opts?.includeDeleted ? rows : rows.filter((r) => r.deletedAt === null);
+  return visible.map(normalizeRecipe);
+}
+
+/**
+ * One-time cleanup: give every legacy recipe missing `tags` an empty array,
+ * written straight to storage. This is a purely local schema tidy-up, so it
+ * bypasses the stamp/outbox path — no `updatedAt` churn, no sync push; each
+ * device fixes its own rows (reads are already normalised regardless). Returns
+ * the number backfilled; idempotent, so later runs write nothing.
+ */
+export async function backfillRecipeTags(spaceId: Id): Promise<number> {
+  const db = await getDB();
+  const rows = await db.getAllFromIndex('recipes', 'spaceId', spaceId);
+  const missing = rows.filter((r) => !r.tags);
+  if (missing.length === 0) return 0;
+  const tx = db.transaction('recipes', 'readwrite');
+  await Promise.all(missing.map((r) => tx.objectStore('recipes').put({ ...r, tags: [] })));
+  await tx.done;
+  return missing.length;
 }
 
 /** Placements for a space within an inclusive local-calendar date range,

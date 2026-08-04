@@ -134,9 +134,9 @@ export default function RecipesScreen() {
                   <span className="recipe-card__meta">
                     {count} ingredient{count === 1 ? '' : 's'}
                   </span>
-                  {(r.tags ?? []).length > 0 && (
+                  {r.tags.length > 0 && (
                     <span className="recipe-card__tags">
-                      {(r.tags ?? []).map((tag) => (
+                      {r.tags.map((tag) => (
                         <span key={tag} className="chip chip--neutral recipe-card__tag">
                           {tag}
                         </span>

@@ -308,7 +308,6 @@ export default function PlanScreen() {
                     leftoverFor !== null && isEligibleLeftoverSlot(leftoverFor, date, mealType);
                   return (
                     <div key={mealType} className="plan__slot">
-                      <span className="plan__slot-label">{MEAL_LABEL[mealType]}</span>
                       {items.map((p) => (
                         <MealCard
                           key={p.id}
@@ -344,9 +343,7 @@ export default function PlanScreen() {
                           onClick={() => setPicker({ date, mealType })}
                         >
                           <Icon name="plus" size={18} />
-                          <span>
-                            {items.length > 0 ? 'Add another' : `Add ${MEAL_LABEL[mealType].toLowerCase()}`}
-                          </span>
+                          <span>{items.length > 0 ? 'Another' : MEAL_LABEL[mealType]}</span>
                         </button>
                       )}
                     </div>

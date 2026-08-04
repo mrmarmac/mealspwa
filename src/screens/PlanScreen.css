@@ -256,13 +256,6 @@
   gap: var(--space-2);
 }
 
-.plan__slot-label {
-  font-size: var(--font-size-xs);
-  color: var(--color-text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
 /* An empty slot is the primary target on this screen, so it is full-width and
    unmistakably tappable rather than a thin dashed hairline. */
 .plan__empty {
@@ -432,12 +425,6 @@
 
   .plan__slot {
     gap: var(--space-1);
-  }
-
-  /* The label already tells you lunch/dinner via context on a dense board;
-     keep it but pull it tight against its slot. */
-  .plan__slot-label {
-    line-height: 1;
   }
 }
 

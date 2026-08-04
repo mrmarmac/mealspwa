@@ -6,15 +6,11 @@
 import type { Recipe, RecipeTag } from './types';
 
 /**
- * Narrow `recipes` to those carrying EVERY selected tag (AND semantics — each
- * added tag tightens the filter). An empty selection is a no-op. Legacy rows
- * predating the `tags` field (where `tags` may be `undefined`) are treated as
- * having no tags.
+ * Narrow `recipes` to those carrying ANY of the selected tags (OR semantics —
+ * each added tag widens the results). An empty selection is a no-op. Assumes
+ * `tags` is always an array (normalised on read — see `getRecipesBySpace`).
  */
 export function filterByTags(recipes: Recipe[], tags: RecipeTag[]): Recipe[] {
   if (tags.length === 0) return recipes;
-  return recipes.filter((r) => {
-    const recipeTags = r.tags ?? [];
-    return tags.every((t) => recipeTags.includes(t));
-  });
+  return recipes.filter((r) => r.tags.some((t) => tags.includes(t as RecipeTag)));
 }
