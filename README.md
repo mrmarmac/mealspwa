@@ -66,6 +66,31 @@ sets `base: '/mealspwa/'` to match — if you fork this under a different repo
 name, update `base` there (and the hard-coded worker CORS origin in
 `worker/src/index.ts`) to match.
 
+### Troubleshooting: "Branch main is not allowed to deploy to github-pages"
+
+If the `deploy` job fails with
+
+> Branch "main" is not allowed to deploy to github-pages due to environment
+> protection rules.
+
+then the setup above isn't finished — this is a **repository Settings**
+issue, not a workflow bug (nothing in `deploy.yml` can override an
+environment protection rule). The `github-pages` environment is rejecting a
+deploy from `main`. Fix it in one of two places:
+
+1. **Settings → Pages → Source** must be **GitHub Actions**, not "Deploy from
+   a branch". In "Deploy from a branch" mode GitHub pins the `github-pages`
+   environment to that single branch and rejects the Actions-based deploy
+   from `main`. This is the usual cause (it's one-time setup step 1 above).
+2. If it's already "GitHub Actions", check **Settings → Environments →
+   `github-pages` → Deployment branches and tags**. Set it to "No
+   restriction", or add a rule that matches `main` (a "Selected branches" or
+   "Protected branches only" policy that doesn't match `main` produces this
+   exact error).
+
+After changing the setting, re-run via **Actions → Deploy to GitHub Pages →
+Run workflow**.
+
 ### Why hash routing
 
 The app uses `HashRouter` (see the comment in `src/App.tsx`). GitHub Pages
