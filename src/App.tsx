@@ -5,6 +5,8 @@ import { AppShell } from '@/shell/AppShell';
 import { ErrorBoundary } from '@/shell/ErrorBoundary';
 import { Spinner } from '@/shell/Spinner';
 import { ToastProvider, useToast } from '@/shell/Toast';
+import { useSpaceStore } from '@/store/useSpaceStore';
+import { useSyncStore } from '@/store/useSyncStore';
 
 // ---------------------------------------------------------------------------
 // Screens are owned by the other agents and do not exist in this tree yet.
@@ -29,6 +31,31 @@ const CaptureScreen = lazy(() => import('@/screens/CaptureScreen'));
 const ImportScreen = lazy(() => import('@/screens/ImportScreen'));
 const ShopScreen = lazy(() => import('@/screens/ShopScreen'));
 const SettingsScreen = lazy(() => import('@/screens/SettingsScreen'));
+
+// ---------------------------------------------------------------------------
+// Sync driver. Ensures the active space is loaded, then drives the sync loop
+// for it. When the build has no VITE_SYNC_URL (or the device hasn't enabled
+// sync), start() is a cheap no-op — the app stays local-only. Renders nothing.
+// ---------------------------------------------------------------------------
+
+function SyncController() {
+  const initSpace = useSpaceStore((s) => s.init);
+  const spaceId = useSpaceStore((s) => s.space?.id ?? null);
+  const start = useSyncStore((s) => s.start);
+  const stop = useSyncStore((s) => s.stop);
+
+  useEffect(() => {
+    void initSpace();
+  }, [initSpace]);
+
+  useEffect(() => {
+    if (!spaceId) return;
+    void start(spaceId);
+    return () => stop();
+  }, [spaceId, start, stop]);
+
+  return null;
+}
 
 function FullScreenSpinner() {
   return (
@@ -256,6 +283,7 @@ export default function App() {
     <HashRouter>
       <ToastProvider>
         <PwaUpdatePrompt />
+        <SyncController />
         <OfflineIndicator />
         <InstallBanner />
         <ErrorBoundary>
