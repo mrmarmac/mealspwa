@@ -31,6 +31,13 @@ import './PlanScreen.css';
 
 const MULTIPLIERS = [0.5, 1, 2, 3];
 
+/** Playful rotating labels for the build-list action — a fresh one each time
+ *  the screen mounts or the week is cleared. */
+const GENERATE_NAMES = ['Combine & Dine', 'Lettuce Shop', 'Craft Cart', 'Stock & Roll'];
+function pickGenerateName(): string {
+  return GENERATE_NAMES[Math.floor(Math.random() * GENERATE_NAMES.length)]!;
+}
+
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MEAL_LABEL: Record<MealType, string> = { lunch: 'Lunch', dinner: 'Dinner' };
 
@@ -76,6 +83,7 @@ export default function PlanScreen() {
   const [leftoverFor, setLeftoverFor] = useState<Placement | null>(null);
   const [confirmClear, setConfirmClear] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const [generateName, setGenerateName] = useState(pickGenerateName);
 
   useEffect(() => {
     void initSpace();
@@ -206,6 +214,7 @@ export default function PlanScreen() {
     setConfirmClear(false);
     await clearRange(space.id, weekStart, rangeEnd);
     await clearActiveSession(space.id);
+    setGenerateName(pickGenerateName());
     toast.show({ message: 'Week cleared', variant: 'success' });
   };
 
@@ -214,6 +223,16 @@ export default function PlanScreen() {
       <header className="plan__header">
         <div className="plan__title-row">
           <h1 className="plan__title">Plan</h1>
+          <button
+            type="button"
+            className="plan__today"
+            onClick={() => setWeekAnchor(today)}
+            aria-label="Jump to this week"
+          >
+            {fromISODate(weekStart).toLocaleDateString(undefined, { month: 'long', day: 'numeric' })}
+            {' – '}
+            {fromISODate(rangeEnd).toLocaleDateString(undefined, { month: 'long', day: 'numeric' })}
+          </button>
           <div className="plan__title-actions">
             <button
               type="button"
@@ -244,31 +263,6 @@ export default function PlanScreen() {
             </div>
           </div>
         </div>
-        <nav className="plan__nav" aria-label="Change week">
-          <button
-            type="button"
-            className="plan__nav-btn tap-target"
-            onClick={() => goToWeek(addDays(weekStart, -7))}
-            disabled={atMin}
-            aria-label="Previous week"
-          >
-            <Icon name="chevron" size={20} rotate={90} />
-          </button>
-          <button type="button" className="plan__nav-today" onClick={() => setWeekAnchor(today)}>
-            {fromISODate(weekStart).toLocaleDateString(undefined, { month: 'long', day: 'numeric' })}
-            {' – '}
-            {fromISODate(rangeEnd).toLocaleDateString(undefined, { month: 'long', day: 'numeric' })}
-          </button>
-          <button
-            type="button"
-            className="plan__nav-btn tap-target"
-            onClick={() => goToWeek(addDays(weekStart, 7))}
-            disabled={atMax}
-            aria-label="Next week"
-          >
-            <Icon name="chevron" size={20} rotate={270} />
-          </button>
-        </nav>
       </header>
 
       {leftoverMode && (
@@ -284,13 +278,24 @@ export default function PlanScreen() {
         </div>
       )}
 
-      {planLoading && placements.length === 0 ? (
-        <div className="plan-loading">
-          <Spinner size={28} />
-        </div>
-      ) : (
-        <div className={`plan__board ${leftoverMode ? 'is-placing-leftover' : ''}`}>
-          {days.map((date) => (
+      <div className="plan__body">
+        <button
+          type="button"
+          className="plan__week-nav plan__week-nav--prev"
+          onClick={() => goToWeek(addDays(weekStart, -7))}
+          disabled={atMin || leftoverMode}
+          aria-label="Previous week"
+        >
+          <Icon name="chevron" size={22} rotate={90} />
+        </button>
+
+        {planLoading && placements.length === 0 ? (
+          <div className="plan-loading plan__board">
+            <Spinner size={28} />
+          </div>
+        ) : (
+          <div className={`plan__board ${leftoverMode ? 'is-placing-leftover' : ''}`}>
+            {days.map((date) => (
             <section
               key={date}
               className={`plan__day ${date === today ? 'is-today' : ''}`}
@@ -352,13 +357,24 @@ export default function PlanScreen() {
               </div>
             </section>
           ))}
-        </div>
-      )}
+          </div>
+        )}
 
-      <div className="sticky-cta">
         <button
           type="button"
-          className="btn btn--primary btn--block"
+          className="plan__week-nav plan__week-nav--next"
+          onClick={() => goToWeek(addDays(weekStart, 7))}
+          disabled={atMax || leftoverMode}
+          aria-label="Next week"
+        >
+          <Icon name="chevron" size={22} rotate={270} />
+        </button>
+      </div>
+
+      <div className="plan__generate">
+        <button
+          type="button"
+          className="btn btn--primary"
           onClick={() => void handleGenerate()}
           disabled={plannedCount === 0 || generating}
         >
@@ -367,9 +383,7 @@ export default function PlanScreen() {
           ) : (
             <>
               <Icon name="basket" size={20} />
-              {plannedCount === 0
-                ? 'Plan a meal to build a list'
-                : `Generate shopping list (${plannedCount})`}
+              {plannedCount === 0 ? 'Plan a meal to build a list' : `${generateName} (${plannedCount})`}
             </>
           )}
         </button>
