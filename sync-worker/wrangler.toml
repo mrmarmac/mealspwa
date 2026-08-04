@@ -11,5 +11,5 @@ compatibility_date = "2025-01-01"
 [[d1_databases]]
 binding = "DB"
 database_name = "meals-sync"
-database_id = "REPLACE_WITH_ID_FROM_`wrangler d1 create meals-sync`"
+database_id = "184923f4-71a4-4bb2-832a-f8fa33f09afd"
 migrations_dir = "migrations"
