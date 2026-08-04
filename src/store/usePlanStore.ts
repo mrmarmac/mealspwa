@@ -7,7 +7,12 @@
  * wider window (or fetch the source directly) before trusting `broken`.
  */
 import { create } from 'zustand';
-import { getPlacementsByLeftoverOf, getPlacementsInRange, placementRepo } from '@/db/repo';
+import {
+  deletePlacementsBefore,
+  getPlacementsByLeftoverOf,
+  getPlacementsInRange,
+  placementRepo,
+} from '@/db/repo';
 import { uuidv7, type Id, type ISODate } from '@/domain/primitives';
 import {
   SCHEMA_VERSION,
@@ -118,6 +123,12 @@ interface PlanStoreState {
    *  the in-memory list, so cascades work even if a child falls outside the
    *  loaded range). */
   remove(placementId: Id): Promise<void>;
+  /** Tombstones every placement in the inclusive [from, to] range (both cook
+   *  and leftover), clearing the week from the board. */
+  clearRange(spaceId: Id, from: ISODate, to: ISODate): Promise<void>;
+  /** Hard-deletes local placements dated before `cutoff` (4-week retention).
+   *  Returns the number pruned. */
+  pruneBefore(spaceId: Id, cutoff: ISODate): Promise<number>;
   setMultiplier(placementId: Id, multiplier: Multiplier): Promise<Placement | undefined>;
   /** Creates the child leftover placement for a source cook placement. */
   setLeftovers(
@@ -169,6 +180,23 @@ export const usePlanStore = create<PlanStoreState>((set, get) => ({
     const idSet = new Set(idsToRemove);
     set((s) => ({ placements: s.placements.filter((p) => !idSet.has(p.id)) }));
     await Promise.all(idsToRemove.map((id) => placementRepo.remove(id)));
+  },
+
+  async clearRange(spaceId, from, to) {
+    // Include tombstoned rows? No — tombstoning an already-tombstoned row is a
+    // harmless no-op, but we only need to clear what's live in the range.
+    const inRange = await getPlacementsInRange(spaceId, from, to);
+    const idSet = new Set(inRange.map((p) => p.id));
+    set((s) => ({ placements: s.placements.filter((p) => !idSet.has(p.id)) }));
+    await Promise.all(inRange.map((p) => placementRepo.remove(p.id)));
+  },
+
+  async pruneBefore(spaceId, cutoff) {
+    const removed = await deletePlacementsBefore(spaceId, cutoff);
+    if (removed > 0) {
+      set((s) => ({ placements: s.placements.filter((p) => p.date >= cutoff) }));
+    }
+    return removed;
   },
 
   async setMultiplier(placementId, multiplier) {

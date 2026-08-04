@@ -212,6 +212,11 @@ export interface Recipe extends Syncable {
   archived: boolean;
 }
 
+/** The fixed vocabulary of recipe tags. Deliberately closed: a short, shared
+ *  set keeps filtering meaningful (free-form tags fragment into synonyms). */
+export const RECIPE_TAGS = ['sweet', 'dinner', 'lunch', 'fresh', 'soup', 'spicy'] as const;
+export type RecipeTag = (typeof RECIPE_TAGS)[number];
+
 /** Kept forever after a hard purge so a stale placement can still show a name. */
 export interface RecipeStub {
   id: Id;

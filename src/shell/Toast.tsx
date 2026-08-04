@@ -74,7 +74,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       const existingTimer = timers.current.get(id);
       if (existingTimer) clearTimeout(existingTimer);
 
-      const duration = opts.duration ?? (opts.action ? 0 : 4000);
+      // Transient toasts (a plain "Saved") flash briefly and vanish, iOS-HUD
+      // style; anything with an action (the SW-refresh prompt) stays put until
+      // acted on or dismissed.
+      const duration = opts.duration ?? (opts.action ? 0 : 2200);
       if (duration > 0) {
         const timer = setTimeout(() => dismiss(id), duration);
         timers.current.set(id, timer);
@@ -116,47 +119,53 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             role="status"
             style={{
               pointerEvents: 'auto',
-              display: 'flex',
+              display: 'inline-flex',
               alignItems: 'center',
-              gap: 'var(--space-3)',
-              maxWidth: 480,
-              width: '100%',
+              gap: 'var(--space-2)',
+              // Content-width pill, never full bleed — small and unobtrusive.
+              maxWidth: '100%',
+              width: 'auto',
               background: t.variant === 'error' ? 'var(--color-danger)' : 'var(--color-text)',
               color: 'var(--color-text-on-primary)',
-              borderRadius: 'var(--radius-md)',
-              padding: 'var(--space-3) var(--space-4)',
-              boxShadow: 'var(--shadow-lg)',
+              borderRadius: 'var(--radius-pill)',
+              padding: 'var(--space-2) var(--space-4)',
+              boxShadow: 'var(--shadow-md)',
               fontSize: 'var(--font-size-sm)',
+              fontWeight: 'var(--font-weight-medium)',
               animation: 'meals-toast-in var(--motion-base) var(--ease-standard)',
             }}
           >
-            <span style={{ flex: 1 }}>{t.message}</span>
+            <span>{t.message}</span>
             {t.action ? (
-              <button
-                type="button"
-                className="tap-target"
-                onClick={() => {
-                  t.action?.onClick();
-                  dismiss(t.id);
-                }}
-                style={{
-                  color: 'var(--color-primary-strong)',
-                  fontWeight: 'var(--font-weight-bold)',
-                  padding: '0 var(--space-2)',
-                }}
-              >
-                {t.action.label}
-              </button>
+              <>
+                <button
+                  type="button"
+                  className="tap-target"
+                  onClick={() => {
+                    t.action?.onClick();
+                    dismiss(t.id);
+                  }}
+                  style={{
+                    color: 'var(--color-primary-strong)',
+                    fontWeight: 'var(--font-weight-bold)',
+                    padding: '0 var(--space-2)',
+                  }}
+                >
+                  {t.action.label}
+                </button>
+                {/* The close affordance belongs only to sticky, actionable
+                    toasts; a transient "Saved" just fades on its own. */}
+                <button
+                  type="button"
+                  aria-label="Dismiss"
+                  className="tap-target"
+                  onClick={() => dismiss(t.id)}
+                  style={{ color: 'inherit', opacity: 0.8, width: 28, minWidth: 28 }}
+                >
+                  <Icon name="x" size={16} />
+                </button>
+              </>
             ) : null}
-            <button
-              type="button"
-              aria-label="Dismiss"
-              className="tap-target"
-              onClick={() => dismiss(t.id)}
-              style={{ color: 'inherit', opacity: 0.8, width: 32, minWidth: 32 }}
-            >
-              <Icon name="x" size={16} />
-            </button>
           </div>
         ))}
       </div>

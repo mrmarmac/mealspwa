@@ -83,6 +83,9 @@ interface ShoppingStoreState {
   startSession(spaceId: Id, from: ISODate, to: ISODate): Promise<ShoppingSession>;
   /** Loads the currently active session for a space without creating one. */
   loadActive(spaceId: Id): Promise<void>;
+  /** Marks the active session `done` and resets store state, so the shopping
+   *  list is cleared and the next `startSession` builds a fresh one. */
+  clearActiveSession(spaceId: Id): Promise<void>;
   toggleTick(lineKey: string): Promise<ShoppingTick | undefined>;
   addManualItem(rawText: string, sessionId: Id | null): Promise<ManualItem | undefined>;
   setPackSize(
@@ -197,6 +200,14 @@ export const useShoppingStore = create<ShoppingStoreState>((set, get) => ({
     } catch (err) {
       set({ error: errorMessage(err), loading: false });
     }
+  },
+
+  async clearActiveSession(spaceId) {
+    const active = await getShoppingSessionsBySpaceAndStatus(spaceId, 'active');
+    await Promise.all(
+      active.map((session) => shoppingSessionRepo.put({ ...session, status: 'done' })),
+    );
+    set({ session: null, ticks: [], manualItems: [], derivedList: null });
   },
 
   async toggleTick(lineKey) {
