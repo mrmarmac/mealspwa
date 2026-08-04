@@ -44,6 +44,7 @@ jobs:
         run: npm run build
         env:
           VITE_RECIPE_FETCHER_URL: ${{ vars.VITE_RECIPE_FETCHER_URL }}
+          VITE_SYNC_URL: ${{ vars.VITE_SYNC_URL }}
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

@@ -1,0 +1,15 @@
+name = "meals-sync"
+main = "src/index.ts"
+compatibility_date = "2025-01-01"
+
+# The repo's first stateful binding. Unlike the recipe-fetcher worker (which is
+# deliberately stateless), sync needs to persist per-space data — so it lives in
+# its own worker with its own D1 database.
+#
+# `database_id` is filled in by `npx wrangler d1 create meals-sync` (see
+# README). It is a public identifier, not a secret.
+[[d1_databases]]
+binding = "DB"
+database_name = "meals-sync"
+database_id = "REPLACE_WITH_ID_FROM_`wrangler d1 create meals-sync`"
+migrations_dir = "migrations"
