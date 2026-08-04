@@ -212,63 +212,60 @@ export default function PlanScreen() {
   return (
     <div className="plan">
       <header className="plan__header">
-        <div className="plan__title-row">
-          <h1 className="plan__title">Plan</h1>
-          <div className="plan__title-actions">
+        <div className="plan__bar">
+          <button
+            type="button"
+            className="plan__clear tap-target"
+            onClick={() => setConfirmClear(true)}
+            disabled={!hasPlacements}
+            aria-label="Clear this week"
+          >
+            <Icon name="trash" size={18} />
+          </button>
+          <nav className="plan__nav" aria-label="Change week">
             <button
               type="button"
-              className="plan__clear tap-target"
-              onClick={() => setConfirmClear(true)}
-              disabled={!hasPlacements}
-              aria-label="Clear this week"
+              className="plan__nav-btn tap-target"
+              onClick={() => goToWeek(addDays(weekStart, -7))}
+              disabled={atMin}
+              aria-label="Previous week"
             >
-              <Icon name="trash" size={18} />
+              <Icon name="chevron" size={20} rotate={90} />
             </button>
-            <div className="plan__range" role="group" aria-label="Plan range">
-              <button
-                type="button"
-                className={`plan__range-btn ${rangeDays === 7 ? 'is-active' : ''}`}
-                onClick={() => setRangeDays(7)}
-                aria-pressed={rangeDays === 7}
-              >
-                Week
-              </button>
-              <button
-                type="button"
-                className={`plan__range-btn ${rangeDays === 14 ? 'is-active' : ''}`}
-                onClick={() => setRangeDays(14)}
-                aria-pressed={rangeDays === 14}
-              >
-                Fortnight
-              </button>
-            </div>
+            <button type="button" className="plan__nav-today" onClick={() => setWeekAnchor(today)}>
+              {fromISODate(weekStart).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+              {' – '}
+              {fromISODate(rangeEnd).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+            </button>
+            <button
+              type="button"
+              className="plan__nav-btn tap-target"
+              onClick={() => goToWeek(addDays(weekStart, 7))}
+              disabled={atMax}
+              aria-label="Next week"
+            >
+              <Icon name="chevron" size={20} rotate={270} />
+            </button>
+          </nav>
+          <div className="plan__range" role="group" aria-label="Plan range">
+            <button
+              type="button"
+              className={`plan__range-btn ${rangeDays === 7 ? 'is-active' : ''}`}
+              onClick={() => setRangeDays(7)}
+              aria-pressed={rangeDays === 7}
+            >
+              Week
+            </button>
+            <button
+              type="button"
+              className={`plan__range-btn ${rangeDays === 14 ? 'is-active' : ''}`}
+              onClick={() => setRangeDays(14)}
+              aria-pressed={rangeDays === 14}
+            >
+              Fortnight
+            </button>
           </div>
         </div>
-        <nav className="plan__nav" aria-label="Change week">
-          <button
-            type="button"
-            className="plan__nav-btn tap-target"
-            onClick={() => goToWeek(addDays(weekStart, -7))}
-            disabled={atMin}
-            aria-label="Previous week"
-          >
-            <Icon name="chevron" size={20} rotate={90} />
-          </button>
-          <button type="button" className="plan__nav-today" onClick={() => setWeekAnchor(today)}>
-            {fromISODate(weekStart).toLocaleDateString(undefined, { month: 'long', day: 'numeric' })}
-            {' – '}
-            {fromISODate(rangeEnd).toLocaleDateString(undefined, { month: 'long', day: 'numeric' })}
-          </button>
-          <button
-            type="button"
-            className="plan__nav-btn tap-target"
-            onClick={() => goToWeek(addDays(weekStart, 7))}
-            disabled={atMax}
-            aria-label="Next week"
-          >
-            <Icon name="chevron" size={20} rotate={270} />
-          </button>
-        </nav>
       </header>
 
       {leftoverMode && (
