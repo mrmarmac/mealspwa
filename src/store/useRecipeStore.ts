@@ -5,7 +5,7 @@
  */
 import { create } from 'zustand';
 import { applyOverrides, parseIngredientBlock, PARSER_VERSION } from '@/parser';
-import { getRecipesBySpace, recipeRepo } from '@/db/repo';
+import { backfillRecipeTags, getRecipesBySpace, recipeRepo } from '@/db/repo';
 import { uuidv7, type Id } from '@/domain/primitives';
 import {
   SCHEMA_VERSION,
@@ -109,6 +109,8 @@ export const useRecipeStore = create<RecipeStoreState>((set, get) => ({
   async load(spaceId) {
     set({ loading: true, error: null });
     try {
+      // One-time tidy-up of legacy rows missing `tags`; no-op once clean.
+      await backfillRecipeTags(spaceId);
       const recipes = await getRecipesBySpace(spaceId);
       set({ recipes, loading: false, loaded: true });
     } catch (err) {

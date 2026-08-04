@@ -67,9 +67,9 @@ export default function CaptureScreen() {
       setSourceUrl(existing.sourceUrl ?? '');
       setIngredientsRaw(existing.ingredientsRaw);
       setMethod(existing.method ?? '');
-      setTags((existing.tags ?? []).filter((t): t is RecipeTag =>
-        (RECIPE_TAGS as readonly string[]).includes(t),
-      ));
+      setTags(
+        existing.tags.filter((t): t is RecipeTag => (RECIPE_TAGS as readonly string[]).includes(t)),
+      );
       setPrefilled(true);
       return;
     }
