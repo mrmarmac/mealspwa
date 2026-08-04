@@ -144,9 +144,10 @@ export const useShoppingStore = create<ShoppingStoreState>((set, get) => ({
     set({ loading: true, error: null });
     try {
       const active = await getShoppingSessionsBySpaceAndStatus(spaceId, 'active');
-      let session = active[0];
+      const existing = active[0];
 
-      if (!session) {
+      let session: ShoppingSession;
+      if (!existing) {
         const draft: ShoppingSession = {
           id: uuidv7(),
           kind: 'shoppingSession',
@@ -162,6 +163,13 @@ export const useShoppingStore = create<ShoppingStoreState>((set, get) => ({
           startedAt: new Date().toISOString(),
         };
         session = await shoppingSessionRepo.put(draft);
+      } else if (existing.fromDate !== from || existing.toDate !== to) {
+        // Reusing the open session, but for a different week — retarget its
+        // range so the derived list is computed from the week being generated,
+        // not whatever week the session was first opened for.
+        session = await shoppingSessionRepo.put({ ...existing, fromDate: from, toDate: to });
+      } else {
+        session = existing;
       }
 
       const [ticks, manualItems, itemMeta, packSizes] = await Promise.all([

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { resetTestDatabase } from '@/db/testUtils';
-import { placementRepo } from '@/db/repo';
+import { getOutboxEntries, placementRepo, removeOutboxEntries } from '@/db/repo';
 import { deriveLeftoverLinks, usePlanStore } from './usePlanStore';
 import { uuidv7 } from '@/domain/primitives';
 import { SCHEMA_VERSION, makeSlotId, type Placement } from '@/domain/types';
@@ -178,11 +178,18 @@ describe('usePlanStore.clearRange', () => {
 describe('usePlanStore.pruneBefore', () => {
   beforeEach(() => resetTestDatabase());
 
-  it('hard-deletes placements before the cutoff and keeps the rest', async () => {
+  /** Simulate "already synced": drain the outbox so no write is pending. */
+  async function drainOutbox() {
+    const entries = await getOutboxEntries();
+    await removeOutboxEntries(entries.map((e) => e.id));
+  }
+
+  it('hard-deletes synced placements before the cutoff and keeps the rest', async () => {
     const spaceId = 'space-1';
     const old = await placementRepo.put(makePlacement({ spaceId, date: '2026-06-01' }));
     const onCutoff = await placementRepo.put(makePlacement({ spaceId, date: '2026-07-06' }));
     const recent = await placementRepo.put(makePlacement({ spaceId, date: '2026-08-04' }));
+    await drainOutbox();
 
     await usePlanStore.getState().load(spaceId, '2026-06-01', '2026-08-31');
     const removed = await usePlanStore.getState().pruneBefore(spaceId, '2026-07-06');
@@ -197,6 +204,19 @@ describe('usePlanStore.pruneBefore', () => {
 
     // In-memory state drops the pruned row too.
     expect(usePlanStore.getState().placements.map((p) => p.id)).not.toContain(old.id);
+  });
+
+  it('does NOT prune an old placement that is still pending in the outbox (unsynced)', async () => {
+    const spaceId = 'space-1';
+    // Put but do NOT drain: the write is still queued for push.
+    const oldPending = await placementRepo.put(makePlacement({ spaceId, date: '2026-06-01' }));
+
+    await usePlanStore.getState().load(spaceId, '2026-06-01', '2026-08-31');
+    const removed = await usePlanStore.getState().pruneBefore(spaceId, '2026-07-06');
+
+    expect(removed).toBe(0);
+    const all = await placementRepo.getAll({ includeDeleted: true });
+    expect(all.map((p) => p.id)).toContain(oldPending.id);
   });
 });
 
