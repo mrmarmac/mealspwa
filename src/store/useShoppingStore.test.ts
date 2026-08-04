@@ -36,6 +36,18 @@ describe('useShoppingStore.clearActiveSession', () => {
     expect(await getShoppingSessionsBySpaceAndStatus(spaceId, 'done')).toHaveLength(1);
   });
 
+  it('retargets the reused active session to the new week (no clear needed)', async () => {
+    const first = await useShoppingStore.getState().startSession(spaceId, '2026-08-03', '2026-08-09');
+    // Generate again for a different week WITHOUT clearing the session.
+    const second = await useShoppingStore.getState().startSession(spaceId, '2026-08-10', '2026-08-16');
+
+    // Same session is reused, but its range now follows the week generated.
+    expect(second.id).toBe(first.id);
+    expect(second.fromDate).toBe('2026-08-10');
+    expect(second.toDate).toBe('2026-08-16');
+    expect(await getShoppingSessionsBySpaceAndStatus(spaceId, 'active')).toHaveLength(1);
+  });
+
   it('lets the next startSession build a fresh session with the new dates', async () => {
     await useShoppingStore.getState().startSession(spaceId, '2026-08-03', '2026-08-09');
     await useShoppingStore.getState().clearActiveSession(spaceId);

@@ -204,12 +204,19 @@ export async function getPlacementsInRange(
 }
 
 /**
- * Hard-delete placements dated strictly before `cutoff` for a space (both live
- * and tombstoned rows), and drop any outbox entries for them. This is local
- * retention hygiene for the 4-week window — a real delete, not a tombstone:
- * tombstoning would keep the rows around forever and grow the outbox, and
- * there is nothing useful to resurrect this far in the past. Returns the count
- * removed. Peers keep their own copies until their own window prunes them.
+ * Hard-delete placements dated strictly before `cutoff` for a space. This is
+ * local retention hygiene for the 4-week window — a real delete, not a
+ * tombstone.
+ *
+ * ONLY prunes rows that have already synced, i.e. that are NOT sitting in the
+ * outbox waiting to be pushed. A row still in the outbox has a pending local
+ * change the peer hasn't seen; deleting it would drop that change AND, because
+ * sync is whole-entity last-write-wins with no tombstone left behind, invite
+ * the peer to re-push its own copy and resurrect the row. Waiting until the
+ * outbox has drained means the write has settled and normal delta sync (which
+ * only re-pulls entities updated after its cursor) won't bring it back.
+ *
+ * Returns the count actually removed.
  */
 export async function deletePlacementsBefore(spaceId: Id, cutoff: ISODate): Promise<number> {
   const db = await getDB();
@@ -218,15 +225,14 @@ export async function deletePlacementsBefore(spaceId: Id, cutoff: ISODate): Prom
   const stale = await db.getAllFromIndex('placements', 'by-space-date', range);
   if (stale.length === 0) return 0;
 
-  const tx = db.transaction(['placements', 'outbox'], 'readwrite');
-  await Promise.all(
-    stale.flatMap((p) => [
-      tx.objectStore('placements').delete(p.id),
-      tx.objectStore('outbox').delete(p.id),
-    ]),
-  );
+  const pending = new Set((await db.getAll('outbox')).map((e) => e.id));
+  const prunable = stale.filter((p) => !pending.has(p.id));
+  if (prunable.length === 0) return 0;
+
+  const tx = db.transaction('placements', 'readwrite');
+  await Promise.all(prunable.map((p) => tx.objectStore('placements').delete(p.id)));
   await tx.done;
-  return stale.length;
+  return prunable.length;
 }
 
 export async function getPlacementsByRecipeId(
