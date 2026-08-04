@@ -145,6 +145,61 @@ describe('usePlanStore.remove cascades tombstones to leftover children', () => {
   });
 });
 
+describe('usePlanStore.clearRange', () => {
+  beforeEach(() => resetTestDatabase());
+
+  it('tombstones every placement in the range and clears them from state, leaving others', async () => {
+    const spaceId = 'space-1';
+    const cook = await placementRepo.put(makePlacement({ spaceId, date: '2026-08-04', source: 'cook' }));
+    const leftover = await placementRepo.put(
+      makePlacement({ spaceId, date: '2026-08-05', source: 'leftover', leftoverOf: cook.id }),
+    );
+    const outside = await placementRepo.put(
+      makePlacement({ spaceId, date: '2026-08-20', source: 'cook' }),
+    );
+
+    await usePlanStore.getState().load(spaceId, '2026-08-03', '2026-08-09');
+    await usePlanStore.getState().clearRange(spaceId, '2026-08-03', '2026-08-09');
+
+    // In-memory state is emptied of the range's placements.
+    expect(usePlanStore.getState().placements).toHaveLength(0);
+
+    const live = await placementRepo.getAll();
+    expect(live.map((p) => p.id)).toEqual([outside.id]);
+
+    const all = await placementRepo.getAll({ includeDeleted: true });
+    const byId = new Map(all.map((p) => [p.id, p]));
+    expect(byId.get(cook.id)?.deletedAt).not.toBeNull();
+    expect(byId.get(leftover.id)?.deletedAt).not.toBeNull();
+    expect(byId.get(outside.id)?.deletedAt).toBeNull();
+  });
+});
+
+describe('usePlanStore.pruneBefore', () => {
+  beforeEach(() => resetTestDatabase());
+
+  it('hard-deletes placements before the cutoff and keeps the rest', async () => {
+    const spaceId = 'space-1';
+    const old = await placementRepo.put(makePlacement({ spaceId, date: '2026-06-01' }));
+    const onCutoff = await placementRepo.put(makePlacement({ spaceId, date: '2026-07-06' }));
+    const recent = await placementRepo.put(makePlacement({ spaceId, date: '2026-08-04' }));
+
+    await usePlanStore.getState().load(spaceId, '2026-06-01', '2026-08-31');
+    const removed = await usePlanStore.getState().pruneBefore(spaceId, '2026-07-06');
+
+    expect(removed).toBe(1);
+    // Hard delete: the old row is gone even from includeDeleted.
+    const all = await placementRepo.getAll({ includeDeleted: true });
+    const ids = all.map((p) => p.id);
+    expect(ids).not.toContain(old.id);
+    expect(ids).toContain(onCutoff.id); // cutoff is inclusive-kept
+    expect(ids).toContain(recent.id);
+
+    // In-memory state drops the pruned row too.
+    expect(usePlanStore.getState().placements.map((p) => p.id)).not.toContain(old.id);
+  });
+});
+
 describe('usePlanStore.setLeftovers', () => {
   beforeEach(() => resetTestDatabase());
 

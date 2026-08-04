@@ -203,6 +203,32 @@ export async function getPlacementsInRange(
   return opts?.includeDeleted ? rows : rows.filter((r) => r.deletedAt === null);
 }
 
+/**
+ * Hard-delete placements dated strictly before `cutoff` for a space (both live
+ * and tombstoned rows), and drop any outbox entries for them. This is local
+ * retention hygiene for the 4-week window — a real delete, not a tombstone:
+ * tombstoning would keep the rows around forever and grow the outbox, and
+ * there is nothing useful to resurrect this far in the past. Returns the count
+ * removed. Peers keep their own copies until their own window prunes them.
+ */
+export async function deletePlacementsBefore(spaceId: Id, cutoff: ISODate): Promise<number> {
+  const db = await getDB();
+  // Upper bound exclusive so a placement exactly on the cutoff is kept.
+  const range = IDBKeyRange.bound([spaceId, ''], [spaceId, cutoff], false, true);
+  const stale = await db.getAllFromIndex('placements', 'by-space-date', range);
+  if (stale.length === 0) return 0;
+
+  const tx = db.transaction(['placements', 'outbox'], 'readwrite');
+  await Promise.all(
+    stale.flatMap((p) => [
+      tx.objectStore('placements').delete(p.id),
+      tx.objectStore('outbox').delete(p.id),
+    ]),
+  );
+  await tx.done;
+  return stale.length;
+}
+
 export async function getPlacementsByRecipeId(
   recipeId: Id,
   opts?: GetAllOptions,

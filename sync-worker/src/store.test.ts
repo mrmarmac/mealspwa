@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   authDecision,
   bearerToken,
+  LIMITS,
   parsePushBody,
   sha256Hex,
   shouldWrite,
@@ -98,5 +99,39 @@ describe('parsePushBody', () => {
   it('rejects non-objects', () => {
     expect(parsePushBody(null)).toBeNull();
     expect(parsePushBody('nope')).toBeNull();
+  });
+
+  it('rejects an over-length spaceId', () => {
+    const spaceId = 'x'.repeat(LIMITS.MAX_SPACE_ID_LENGTH + 1);
+    expect(parsePushBody({ spaceId, entities: [] })).toBeNull();
+  });
+
+  it('accepts a spaceId at the length cap', () => {
+    const spaceId = 'x'.repeat(LIMITS.MAX_SPACE_ID_LENGTH);
+    expect(parsePushBody({ spaceId, entities: [] })).not.toBeNull();
+  });
+
+  it('rejects more entities than the per-push cap', () => {
+    const entities = Array.from({ length: LIMITS.MAX_ENTITIES_PER_PUSH + 1 }, (_, i) => ({
+      id: `r${i}`,
+      spaceId: 's1',
+      updatedAt: '000-0-a',
+    }));
+    expect(parsePushBody({ spaceId: 's1', entities })).toBeNull();
+  });
+
+  it('accepts entities up to the per-push cap', () => {
+    const entities = Array.from({ length: LIMITS.MAX_ENTITIES_PER_PUSH }, (_, i) => ({
+      id: `r${i}`,
+      spaceId: 's1',
+      updatedAt: '000-0-a',
+    }));
+    expect(parsePushBody({ spaceId: 's1', entities })).not.toBeNull();
+  });
+
+  it('rejects an over-length or empty entity id', () => {
+    const longId = { id: 'x'.repeat(LIMITS.MAX_ENTITY_ID_LENGTH + 1), spaceId: 's1', updatedAt: 'a' };
+    expect(parsePushBody({ spaceId: 's1', entities: [longId] })).toBeNull();
+    expect(parsePushBody({ spaceId: 's1', entities: [{ id: '', spaceId: 's1', updatedAt: 'a' }] })).toBeNull();
   });
 });

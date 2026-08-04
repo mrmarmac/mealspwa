@@ -16,6 +16,8 @@ import {
   type ISODate,
 } from '@/domain/primitives';
 import { makeSlotId, type MealType, type Placement, type Recipe } from '@/domain/types';
+import { clampWeekStart, planWeekBounds, retentionCutoff } from '@/domain/planWindow';
+import { isEligibleLeftoverSlot } from './planSlots';
 import { useSpaceStore } from '@/store/useSpaceStore';
 import { useRecipeStore } from '@/store/useRecipeStore';
 import { usePlanStore } from '@/store/usePlanStore';
@@ -62,13 +64,17 @@ export default function PlanScreen() {
   const removePlacement = usePlanStore((s) => s.remove);
   const setMultiplier = usePlanStore((s) => s.setMultiplier);
   const setLeftovers = usePlanStore((s) => s.setLeftovers);
+  const clearRange = usePlanStore((s) => s.clearRange);
+  const pruneBefore = usePlanStore((s) => s.pruneBefore);
   const startSession = useShoppingStore((s) => s.startSession);
+  const clearActiveSession = useShoppingStore((s) => s.clearActiveSession);
 
   const [rangeDays, setRangeDays] = useState<7 | 14>(7);
   const [weekAnchor, setWeekAnchor] = useState<ISODate>(todayISO());
   const [picker, setPicker] = useState<SlotTarget | null>(null);
   const [query, setQuery] = useState('');
   const [leftoverFor, setLeftoverFor] = useState<Placement | null>(null);
+  const [confirmClear, setConfirmClear] = useState(false);
   const [generating, setGenerating] = useState(false);
 
   useEffect(() => {
@@ -91,6 +97,12 @@ export default function PlanScreen() {
     void loadRecipes(space.id);
     void loadPlan(space.id, weekStart, rangeEnd);
   }, [space, weekStart, rangeEnd, loadRecipes, loadPlan]);
+
+  // 4-week retention: drop plan data older than the window on entry.
+  useEffect(() => {
+    if (!space) return;
+    void pruneBefore(space.id, retentionCutoff(todayISO(), space.settings.weekStartsOn));
+  }, [space, pruneBefore]);
 
   const days = useMemo(
     () => Array.from({ length: rangeDays }, (_, i) => addDays(weekStart, i)),
@@ -172,35 +184,72 @@ export default function PlanScreen() {
     );
   }
 
+  const weekStartsOn = space.settings.weekStartsOn;
+  const bounds = planWeekBounds(today, weekStartsOn);
+  const atMin = weekStart <= bounds.min;
+  const atMax = weekStart >= bounds.max;
+  const leftoverMode = leftoverFor !== null;
+  const hasPlacements = placements.some((p) => p.deletedAt === null);
+
+  const goToWeek = (nextWeekStart: ISODate) =>
+    setWeekAnchor(clampWeekStart(nextWeekStart, today, weekStartsOn));
+
+  const placeLeftover = async (date: ISODate, mealType: MealType) => {
+    const source = leftoverFor;
+    setLeftoverFor(null);
+    if (!source) return;
+    await setLeftovers(source.id, date, mealType);
+    toast.show({ message: 'Leftovers planned', variant: 'success' });
+  };
+
+  const handleClear = async () => {
+    setConfirmClear(false);
+    await clearRange(space.id, weekStart, rangeEnd);
+    await clearActiveSession(space.id);
+    toast.show({ message: 'Week cleared', variant: 'success' });
+  };
+
   return (
     <div className="plan">
       <header className="plan__header">
         <div className="plan__title-row">
           <h1 className="plan__title">Plan</h1>
-          <div className="plan__range" role="group" aria-label="Plan range">
+          <div className="plan__title-actions">
             <button
               type="button"
-              className={`plan__range-btn ${rangeDays === 7 ? 'is-active' : ''}`}
-              onClick={() => setRangeDays(7)}
-              aria-pressed={rangeDays === 7}
+              className="plan__clear tap-target"
+              onClick={() => setConfirmClear(true)}
+              disabled={!hasPlacements}
+              aria-label="Clear this week"
             >
-              Week
+              <Icon name="trash" size={18} />
             </button>
-            <button
-              type="button"
-              className={`plan__range-btn ${rangeDays === 14 ? 'is-active' : ''}`}
-              onClick={() => setRangeDays(14)}
-              aria-pressed={rangeDays === 14}
-            >
-              Fortnight
-            </button>
+            <div className="plan__range" role="group" aria-label="Plan range">
+              <button
+                type="button"
+                className={`plan__range-btn ${rangeDays === 7 ? 'is-active' : ''}`}
+                onClick={() => setRangeDays(7)}
+                aria-pressed={rangeDays === 7}
+              >
+                Week
+              </button>
+              <button
+                type="button"
+                className={`plan__range-btn ${rangeDays === 14 ? 'is-active' : ''}`}
+                onClick={() => setRangeDays(14)}
+                aria-pressed={rangeDays === 14}
+              >
+                Fortnight
+              </button>
+            </div>
           </div>
         </div>
         <nav className="plan__nav" aria-label="Change week">
           <button
             type="button"
             className="plan__nav-btn tap-target"
-            onClick={() => setWeekAnchor(addDays(weekStart, -7))}
+            onClick={() => goToWeek(addDays(weekStart, -7))}
+            disabled={atMin}
             aria-label="Previous week"
           >
             <Icon name="chevron" size={20} rotate={90} />
@@ -213,7 +262,8 @@ export default function PlanScreen() {
           <button
             type="button"
             className="plan__nav-btn tap-target"
-            onClick={() => setWeekAnchor(addDays(weekStart, 7))}
+            onClick={() => goToWeek(addDays(weekStart, 7))}
+            disabled={atMax}
             aria-label="Next week"
           >
             <Icon name="chevron" size={20} rotate={270} />
@@ -221,12 +271,25 @@ export default function PlanScreen() {
         </nav>
       </header>
 
+      {leftoverMode && (
+        <div className="plan__leftover-banner" role="status">
+          <span>Tap a slot to send leftovers there</span>
+          <button
+            type="button"
+            className="plan__leftover-cancel"
+            onClick={() => setLeftoverFor(null)}
+          >
+            Cancel
+          </button>
+        </div>
+      )}
+
       {planLoading && placements.length === 0 ? (
         <div className="plan-loading">
           <Spinner size={28} />
         </div>
       ) : (
-        <div className="plan__board">
+        <div className={`plan__board ${leftoverMode ? 'is-placing-leftover' : ''}`}>
           {days.map((date) => (
             <section
               key={date}
@@ -241,6 +304,8 @@ export default function PlanScreen() {
                 {mealTypes.map((mealType) => {
                   const slot = makeSlotId(date, mealType);
                   const items = bySlot.get(slot) ?? [];
+                  const eligible =
+                    leftoverFor !== null && isEligibleLeftoverSlot(leftoverFor, date, mealType);
                   return (
                     <div key={mealType} className="plan__slot">
                       <span className="plan__slot-label">{MEAL_LABEL[mealType]}</span>
@@ -249,22 +314,41 @@ export default function PlanScreen() {
                           key={p.id}
                           placement={p}
                           recipe={p.recipeId ? recipeById.get(p.recipeId) : undefined}
-                          onOpen={() => p.recipeId && navigate(`/recipes/${p.recipeId}`)}
+                          disabled={leftoverMode}
+                          onOpen={() =>
+                            p.recipeId &&
+                            navigate(`/recipes/${p.recipeId}`, { state: { from: '/plan' } })
+                          }
                           onMultiplier={(m) => void setMultiplier(p.id, m)}
                           onLeftovers={() => setLeftoverFor(p)}
                           onRemove={() => void removePlacement(p.id)}
                         />
                       ))}
-                      <button
-                        type="button"
-                        className="plan__empty tap-target"
-                        onClick={() => setPicker({ date, mealType })}
-                      >
-                        <Icon name="plus" size={18} />
-                        <span>
-                          {items.length > 0 ? 'Add another' : `Add ${MEAL_LABEL[mealType].toLowerCase()}`}
-                        </span>
-                      </button>
+                      {leftoverMode ? (
+                        eligible ? (
+                          <button
+                            type="button"
+                            className="plan__place-leftover tap-target"
+                            onClick={() => void placeLeftover(date, mealType)}
+                          >
+                            <Icon name="leftovers" size={16} />
+                            <span>Place here</span>
+                          </button>
+                        ) : (
+                          <span className="plan__slot-blocked" aria-hidden="true" />
+                        )
+                      ) : (
+                        <button
+                          type="button"
+                          className="plan__empty tap-target"
+                          onClick={() => setPicker({ date, mealType })}
+                        >
+                          <Icon name="plus" size={18} />
+                          <span>
+                            {items.length > 0 ? 'Add another' : `Add ${MEAL_LABEL[mealType].toLowerCase()}`}
+                          </span>
+                        </button>
+                      )}
                     </div>
                   );
                 })}
@@ -359,50 +443,31 @@ export default function PlanScreen() {
         </div>
       </BottomSheet>
 
-      {/* Leftovers target picker */}
+      {/* Clear-week confirmation */}
       <BottomSheet
-        open={leftoverFor !== null}
-        onClose={() => setLeftoverFor(null)}
-        title="Leftovers go to…"
+        open={confirmClear}
+        onClose={() => setConfirmClear(false)}
+        title="Clear this week?"
       >
-        <div className="leftover-picker">
-          <p className="leftover-picker__hint">
-            The slot you pick fills itself, and adds nothing to the shopping list.
+        <div className="plan__confirm">
+          <p>
+            This removes every meal shown here and empties the shopping list for it. Your recipes
+            aren&apos;t touched.
           </p>
-          <ul className="leftover-picker__list">
-            {days
-              .flatMap((date) => mealTypes.map((mealType) => ({ date, mealType })))
-              .filter(({ date, mealType }) => {
-                if (!leftoverFor) return false;
-                if (date < leftoverFor.date) return false;
-                if (date === leftoverFor.date && mealType === leftoverFor.mealType) return false;
-                return true;
-              })
-              .map(({ date, mealType }) => (
-                <li key={`${date}#${mealType}`}>
-                  <button
-                    type="button"
-                    className="list-row"
-                    onClick={async () => {
-                      const source = leftoverFor;
-                      setLeftoverFor(null);
-                      if (!source) return;
-                      await setLeftovers(source.id, date, mealType);
-                      toast.show({ message: 'Leftovers planned', variant: 'success' });
-                    }}
-                  >
-                    <span>
-                      {fromISODate(date).toLocaleDateString(undefined, {
-                        weekday: 'long',
-                        day: 'numeric',
-                        month: 'short',
-                      })}
-                    </span>
-                    <span className="leftover-picker__meal">{MEAL_LABEL[mealType]}</span>
-                  </button>
-                </li>
-              ))}
-          </ul>
+          <button
+            type="button"
+            className="btn btn--primary btn--block"
+            onClick={() => void handleClear()}
+          >
+            Clear week
+          </button>
+          <button
+            type="button"
+            className="btn btn--secondary btn--block"
+            onClick={() => setConfirmClear(false)}
+          >
+            Keep it
+          </button>
         </div>
       </BottomSheet>
     </div>
@@ -412,15 +477,50 @@ export default function PlanScreen() {
 interface MealCardProps {
   placement: Placement;
   recipe: Recipe | undefined;
+  /** While placing leftovers the board is a target picker, so existing cards
+   *  are shown but inert (no open, no long-press menu). */
+  disabled?: boolean;
   onOpen: () => void;
   onMultiplier: (m: number) => void;
   onLeftovers: () => void;
   onRemove: () => void;
 }
 
-function MealCard({ placement, recipe, onOpen, onMultiplier, onLeftovers, onRemove }: MealCardProps) {
+function MealCard({
+  placement,
+  recipe,
+  disabled = false,
+  onOpen,
+  onMultiplier,
+  onLeftovers,
+  onRemove,
+}: MealCardProps) {
   const isLeftover = placement.source === 'leftover';
   const name = recipe?.name ?? placement.recipeNameSnapshot ?? placement.freeText ?? 'Meal';
+
+  const cardContent = (
+    <>
+      {isLeftover && <Icon name="leftovers" size={16} />}
+      <span className="meal-card__name">{isLeftover ? `Leftovers: ${name}` : name}</span>
+      {!isLeftover && placement.multiplier !== 1 && (
+        <span className="chip chip--neutral meal-card__mult">
+          {formatMultiplier(placement.multiplier)}
+        </span>
+      )}
+      {/* Deleted from the library but still planned — the plan is the truth. */}
+      {!isLeftover && placement.recipeId && !recipe && (
+        <span className="chip chip--neutral">removed</span>
+      )}
+    </>
+  );
+
+  if (disabled) {
+    return (
+      <div className={`meal-card meal-card--inert ${isLeftover ? 'meal-card--leftover' : ''}`}>
+        {cardContent}
+      </div>
+    );
+  }
 
   const items = isLeftover
     ? [{ key: 'remove', label: 'Remove', icon: 'trash' as const, onSelect: onRemove, destructive: true }]
@@ -445,19 +545,7 @@ function MealCard({ placement, recipe, onOpen, onMultiplier, onLeftovers, onRemo
           onClick={onOpen}
           {...trigger}
         >
-          {isLeftover && <Icon name="leftovers" size={16} />}
-          <span className="meal-card__name">
-            {isLeftover ? `Leftovers: ${name}` : name}
-          </span>
-          {!isLeftover && placement.multiplier !== 1 && (
-            <span className="chip chip--neutral meal-card__mult">
-              {formatMultiplier(placement.multiplier)}
-            </span>
-          )}
-          {/* Deleted from the library but still planned — the plan is the truth. */}
-          {!isLeftover && placement.recipeId && !recipe && (
-            <span className="chip chip--neutral">removed</span>
-          )}
+          {cardContent}
         </button>
       )}
     </LongPressMenu>

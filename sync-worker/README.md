@@ -116,6 +116,29 @@ this worker's push/pull/LWW/auth contract against an in-memory fake server.
   multi-tenant SaaS.
 - First-push binding means an attacker would have to bind a real space's id
   *before its owner's first push*, which needs the unguessable id up front.
-- No token rotation/revocation, no rate limiting in v1. Disconnecting and
-  re-enabling mints a new token but does not rebind the server's existing
-  space row — a proper rotate endpoint is future work.
+- No token rotation/revocation. Disconnecting and re-enabling mints a new
+  token but does not rebind the server's existing space row — a proper rotate
+  endpoint is future work.
+
+### Abuse resistance
+
+Space creation is unauthenticated (trust-on-first-use), so anyone who knows
+the worker URL can `POST /push` with random spaceIds. Two layers keep that
+from running up D1 storage or the Cloudflare request quota:
+
+1. **Per-request caps in the worker** (`LIMITS` in `src/store.ts`) bound the
+   damage of any single request that gets through:
+   - request bodies over `MAX_PUSH_BODY_BYTES` (1 MB) are rejected before
+     parsing (`413`);
+   - at most `MAX_ENTITIES_PER_PUSH` (500) entities per push, and `spaceId` /
+     entity `id` lengths are capped (`400`);
+   - a single stored entity blob over `MAX_ENTITY_BODY_BYTES` (64 KB) is
+     rejected (`413`);
+   - a space may hold at most `MAX_ROWS_PER_SPACE` (50 000) rows — new inserts
+     past that are rejected (`413`), while updates to existing rows still go
+     through.
+2. **A Cloudflare Rate Limiting rule on the worker route** is the real defense
+   against volume — set it in the dashboard (no code): Security → WAF → Rate
+   limiting rules, scope to the worker's route, e.g. *N requests / minute per
+   client IP* on `POST /push`. The caps above bound one request; the rate
+   limit bounds how many an attacker can make.

@@ -13,6 +13,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { parseIngredientBlock } from '@/parser';
+import { RECIPE_TAGS, type RecipeTag } from '@/domain/types';
 import { useSpaceStore } from '@/store/useSpaceStore';
 import { useRecipeStore } from '@/store/useRecipeStore';
 import { fetchRecipeFromUrl } from '@/lib/fetcher';
@@ -43,6 +44,7 @@ export default function CaptureScreen() {
   const [sourceUrl, setSourceUrl] = useState('');
   const [ingredientsRaw, setIngredientsRaw] = useState('');
   const [method, setMethod] = useState('');
+  const [tags, setTags] = useState<RecipeTag[]>([]);
   const [fetching, setFetching] = useState(false);
   const [saving, setSaving] = useState(false);
   const [prefilled, setPrefilled] = useState(false);
@@ -65,6 +67,9 @@ export default function CaptureScreen() {
       setSourceUrl(existing.sourceUrl ?? '');
       setIngredientsRaw(existing.ingredientsRaw);
       setMethod(existing.method ?? '');
+      setTags((existing.tags ?? []).filter((t): t is RecipeTag =>
+        (RECIPE_TAGS as readonly string[]).includes(t),
+      ));
       setPrefilled(true);
       return;
     }
@@ -117,6 +122,7 @@ export default function CaptureScreen() {
         sourceUrl: sourceUrl.trim() || null,
         ingredientsRaw,
         method: method.trim() || null,
+        tags,
       });
       toast.show({ message: `Saved ${saved.name}`, variant: 'success' });
       navigate(`/recipes/${saved.id}`);
@@ -128,7 +134,10 @@ export default function CaptureScreen() {
     } finally {
       setSaving(false);
     }
-  }, [space, name, sourceUrl, ingredientsRaw, method, editId, saveRecipe, navigate, toast]);
+  }, [space, name, sourceUrl, ingredientsRaw, method, tags, editId, saveRecipe, navigate, toast]);
+
+  const toggleTag = (tag: RecipeTag) =>
+    setTags((prev) => (prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]));
 
   const canSave = name.trim().length > 0 && ingredientsRaw.trim().length > 0 && !saving;
 
@@ -156,6 +165,26 @@ export default function CaptureScreen() {
           autoComplete="off"
         />
       </label>
+
+      <div className="capture__field">
+        <span className="capture__label">Tags</span>
+        <div className="capture__tags" role="group" aria-label="Recipe tags">
+          {RECIPE_TAGS.map((tag) => {
+            const active = tags.includes(tag);
+            return (
+              <button
+                key={tag}
+                type="button"
+                className={`capture__tag ${active ? 'is-active' : ''}`}
+                onClick={() => toggleTag(tag)}
+                aria-pressed={active}
+              >
+                {tag}
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
       <label className="capture__field">
         <span className="capture__label">Link (optional)</span>

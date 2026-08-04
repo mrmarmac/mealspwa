@@ -1,6 +1,8 @@
-/** The recipe library: a searchable card grid. */
+/** The recipe library: a searchable, tag-filterable card grid. */
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { RECIPE_TAGS, type RecipeTag } from '@/domain/types';
+import { filterByTags } from '@/domain/recipeFilter';
 import { useSpaceStore } from '@/store/useSpaceStore';
 import { useRecipeStore } from '@/store/useRecipeStore';
 import { EmptyState } from '@/shell/EmptyState';
@@ -17,6 +19,7 @@ export default function RecipesScreen() {
   const load = useRecipeStore((s) => s.load);
   const search = useRecipeStore((s) => s.search);
   const [query, setQuery] = useState('');
+  const [selectedTags, setSelectedTags] = useState<RecipeTag[]>([]);
 
   useEffect(() => {
     void initSpace();
@@ -26,10 +29,14 @@ export default function RecipesScreen() {
     if (space) void load(space.id);
   }, [space, load]);
 
+  const toggleTag = (tag: RecipeTag) =>
+    setSelectedTags((prev) => (prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]));
+
   const results = useMemo(() => {
-    const list = query.trim() ? search(query) : recipes;
-    return list.filter((r) => !r.archived);
-  }, [query, recipes, search]);
+    const bySearch = query.trim() ? search(query) : recipes;
+    const byTag = filterByTags(bySearch, selectedTags);
+    return byTag.filter((r) => !r.archived);
+  }, [query, recipes, search, selectedTags]);
 
   if (!space || !loaded) {
     return (
@@ -74,6 +81,22 @@ export default function RecipesScreen() {
             autoComplete="off"
           />
         </label>
+        <div className="recipes__tags" role="group" aria-label="Filter by tag">
+          {RECIPE_TAGS.map((tag) => {
+            const active = selectedTags.includes(tag);
+            return (
+              <button
+                key={tag}
+                type="button"
+                className={`recipes__tag ${active ? 'is-active' : ''}`}
+                onClick={() => toggleTag(tag)}
+                aria-pressed={active}
+              >
+                {tag}
+              </button>
+            );
+          })}
+        </div>
       </header>
 
       {results.length === 0 ? (
@@ -83,7 +106,9 @@ export default function RecipesScreen() {
           description={
             recipes.length === 0
               ? 'Save one from a link, or paste one in.'
-              : 'Try a different word.'
+              : selectedTags.length > 0
+                ? 'Try removing a tag, or a different word.'
+                : 'Try a different word.'
           }
           action={
             recipes.length === 0 ? (
@@ -103,13 +128,21 @@ export default function RecipesScreen() {
                 <button
                   type="button"
                   className="recipe-card"
-                  onClick={() => navigate(`/recipes/${r.id}`)}
+                  onClick={() => navigate(`/recipes/${r.id}`, { state: { from: '/recipes' } })}
                 >
                   <span className="recipe-card__name">{r.name}</span>
                   <span className="recipe-card__meta">
                     {count} ingredient{count === 1 ? '' : 's'}
-                    {r.sourceDomain && ` · ${r.sourceDomain}`}
                   </span>
+                  {(r.tags ?? []).length > 0 && (
+                    <span className="recipe-card__tags">
+                      {(r.tags ?? []).map((tag) => (
+                        <span key={tag} className="chip chip--neutral recipe-card__tag">
+                          {tag}
+                        </span>
+                      ))}
+                    </span>
+                  )}
                   {needsReview > 0 && (
                     <span className="chip chip--warning recipe-card__flag">
                       {needsReview} to check

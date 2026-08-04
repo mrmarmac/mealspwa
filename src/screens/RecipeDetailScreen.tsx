@@ -4,7 +4,7 @@
  * because this is where a bad parse is cheapest to notice and fix.
  */
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import type { ParsedIngredientLine } from '@/domain/types';
 import { useSpaceStore } from '@/store/useSpaceStore';
 import { useRecipeStore } from '@/store/useRecipeStore';
@@ -13,6 +13,13 @@ import { Icon } from '@/shell/Icon';
 import { Spinner } from '@/shell/Spinner';
 import { useToast } from '@/shell/Toast';
 import './RecipeDetailScreen.css';
+
+/** Where "Back" should return to: the screen we arrived from (passed through
+ *  router state), defaulting to the library for deep links / cold loads. */
+export function backTarget(state: unknown): string {
+  const from = (state as { from?: unknown } | null)?.from;
+  return typeof from === 'string' ? from : '/recipes';
+}
 
 /** Group parsed lines under their section heading, preserving order. */
 function groupBySection(lines: ParsedIngredientLine[]) {
@@ -30,7 +37,9 @@ function groupBySection(lines: ParsedIngredientLine[]) {
 export default function RecipeDetailScreen() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const toast = useToast();
+  const back = backTarget(location.state);
 
   const space = useSpaceStore((s) => s.space);
   const initSpace = useSpaceStore((s) => s.init);
@@ -63,7 +72,7 @@ export default function RecipeDetailScreen() {
     return (
       <div className="detail">
         <p className="detail__missing">That recipe isn't here any more.</p>
-        <button type="button" className="btn btn--secondary" onClick={() => navigate('/recipes')}>
+        <button type="button" className="btn btn--secondary" onClick={() => navigate(back)}>
           Back to recipes
         </button>
       </div>
@@ -76,8 +85,8 @@ export default function RecipeDetailScreen() {
         <button
           type="button"
           className="detail__back tap-target"
-          onClick={() => navigate('/recipes')}
-          aria-label="Back to recipes"
+          onClick={() => navigate(back)}
+          aria-label="Back"
         >
           <Icon name="chevron" size={20} rotate={90} />
         </button>

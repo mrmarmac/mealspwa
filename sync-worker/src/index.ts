@@ -24,6 +24,7 @@
 import {
   authDecision,
   bearerToken,
+  LIMITS,
   parsePushBody,
   sha256Hex,
   type RemoteEntity,
@@ -97,6 +98,28 @@ async function storedTokenHash(env: Env, spaceId: string): Promise<string | unde
   return row?.token_hash ?? undefined;
 }
 
+/** Current number of stored rows for a space (for the per-space row cap). */
+async function spaceRowCount(env: Env, spaceId: string): Promise<number> {
+  const row = await env.DB.prepare('SELECT COUNT(*) AS n FROM entities WHERE space_id = ?1')
+    .bind(spaceId)
+    .first<{ n: number }>();
+  return row?.n ?? 0;
+}
+
+/** Of the given ids, which already exist as rows in the space. Used to
+ *  distinguish new inserts (which count against MAX_ROWS_PER_SPACE) from
+ *  updates to existing rows (which don't grow the table). */
+async function existingIds(env: Env, spaceId: string, ids: string[]): Promise<Set<string>> {
+  if (ids.length === 0) return new Set();
+  const placeholders = ids.map((_, i) => `?${i + 2}`).join(', ');
+  const rows = await env.DB.prepare(
+    `SELECT id FROM entities WHERE space_id = ?1 AND id IN (${placeholders})`,
+  )
+    .bind(spaceId, ...ids)
+    .all<{ id: string }>();
+  return new Set(rows.results.map((r) => r.id));
+}
+
 // --- Handlers --------------------------------------------------------------
 
 const UPSERT_SQL =
@@ -108,9 +131,21 @@ async function handlePush(request: Request, env: Env, origin: string | null): Pr
   const presentedHash = await tokenHashFor(request);
   if (!presentedHash) return errorResponse(401, 'Missing bearer token', origin);
 
+  // Cheap up-front reject for oversized bodies: trust Content-Length if the
+  // client sent an honest one, then re-check against the actual bytes read so
+  // a lying/absent header can't slip a huge payload past the cap.
+  const declaredLength = Number(request.headers.get('Content-Length'));
+  if (Number.isFinite(declaredLength) && declaredLength > LIMITS.MAX_PUSH_BODY_BYTES) {
+    return errorResponse(413, 'Push body too large', origin);
+  }
+  const text = await request.text();
+  if (text.length > LIMITS.MAX_PUSH_BODY_BYTES) {
+    return errorResponse(413, 'Push body too large', origin);
+  }
+
   let raw: unknown;
   try {
-    raw = await request.json();
+    raw = JSON.parse(text);
   } catch {
     return errorResponse(400, 'Malformed JSON body', origin);
   }
@@ -135,9 +170,36 @@ async function handlePush(request: Request, env: Env, origin: string | null): Pr
   // Only entities that actually belong to this space; ignore any smuggled in
   // under a different spaceId rather than trusting the row's own field.
   const owned: RemoteEntity[] = body.entities.filter((e) => e.spaceId === body.spaceId);
+
+  // Serialize once, and reject the whole push if any single blob is oversized
+  // — one giant entity is the cheap way to bloat a space past the row cap.
+  const serialized = new Map<string, string>();
+  for (const e of owned) {
+    const blob = JSON.stringify(e);
+    if (blob.length > LIMITS.MAX_ENTITY_BODY_BYTES) {
+      return errorResponse(413, 'Entity too large', origin);
+    }
+    serialized.set(e.id, blob);
+  }
+
+  // Per-space row cap: updates to rows that already exist are always fine
+  // (they don't grow the table), but inserting new ids past the cap is not.
   if (owned.length > 0) {
+    const present = await existingIds(
+      env,
+      body.spaceId,
+      owned.map((e) => e.id),
+    );
+    const newInserts = owned.filter((e) => !present.has(e.id)).length;
+    if (newInserts > 0) {
+      const room = LIMITS.MAX_ROWS_PER_SPACE - (await spaceRowCount(env, body.spaceId));
+      if (newInserts > room) {
+        return errorResponse(413, 'Space is full', origin);
+      }
+    }
+
     const statements = owned.map((e) =>
-      env.DB.prepare(UPSERT_SQL).bind(body.spaceId, e.id, e.updatedAt, JSON.stringify(e)),
+      env.DB.prepare(UPSERT_SQL).bind(body.spaceId, e.id, e.updatedAt, serialized.get(e.id)!),
     );
     await env.DB.batch(statements);
   }
