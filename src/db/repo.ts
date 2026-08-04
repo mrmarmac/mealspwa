@@ -214,6 +214,30 @@ export async function backfillRecipeTags(spaceId: Id): Promise<number> {
   return missing.length;
 }
 
+/**
+ * Refresh the derived ingredient cache for any recipe parsed by an older
+ * parser version. `ingredients` is a pure function of `ingredientsRaw` +
+ * overrides + parser, so — exactly like `backfillRecipeTags` — this recomputes
+ * locally and writes straight to storage, bypassing the stamp/outbox path: no
+ * `updatedAt` churn, no sync push, each device re-derives its own rows
+ * identically. `rederive` re-runs the parser (passed in so this low-level layer
+ * stays parser-agnostic). Idempotent once every row is at `parserVersion`.
+ */
+export async function reparseStaleRecipes(
+  spaceId: Id,
+  parserVersion: number,
+  rederive: (recipe: Recipe) => Recipe,
+): Promise<number> {
+  const db = await getDB();
+  const rows = await db.getAllFromIndex('recipes', 'spaceId', spaceId);
+  const stale = rows.filter((r) => r.parserVersion !== parserVersion);
+  if (stale.length === 0) return 0;
+  const tx = db.transaction('recipes', 'readwrite');
+  await Promise.all(stale.map((r) => tx.objectStore('recipes').put(rederive(normalizeRecipe(r)))));
+  await tx.done;
+  return stale.length;
+}
+
 /** Placements for a space within an inclusive local-calendar date range,
  *  using the compound `by-space-date` index so this is a single index scan
  *  rather than a full-store filter. */

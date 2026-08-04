@@ -49,8 +49,18 @@ export default function RecipesScreen() {
   return (
     <div className="recipes">
       <header className="recipes__header">
-        <div className="recipes__title-row">
-          <h1 className="recipes__title">Recipes</h1>
+        <div className="recipes__search-row">
+          <label className="recipes__search">
+            <Icon name="search" size={18} />
+            <input
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search by name or ingredient"
+              aria-label="Search recipes"
+              autoComplete="off"
+            />
+          </label>
           <div className="recipes__actions">
             <button
               type="button"
@@ -70,17 +80,6 @@ export default function RecipesScreen() {
             </button>
           </div>
         </div>
-        <label className="recipes__search">
-          <Icon name="search" size={18} />
-          <input
-            type="search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search by name or ingredient"
-            aria-label="Search recipes"
-            autoComplete="off"
-          />
-        </label>
         <div className="recipes__tags" role="group" aria-label="Filter by tag">
           {RECIPE_TAGS.map((tag) => {
             const active = selectedTags.includes(tag);

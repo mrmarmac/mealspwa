@@ -84,6 +84,10 @@ export default function PlanScreen() {
   const [confirmClear, setConfirmClear] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [generateName, setGenerateName] = useState(pickGenerateName);
+  // Days whose Dinner slot should show an extra empty slot, revealed via the
+  // day-heading "Add another meal" menu (a slot is no longer auto-offered once
+  // one is filled). Consumed when the extra slot gets a meal.
+  const [extraDinner, setExtraDinner] = useState<ReadonlySet<ISODate>>(() => new Set());
 
   useEffect(() => {
     void initSpace();
@@ -106,7 +110,7 @@ export default function PlanScreen() {
     void loadPlan(space.id, weekStart, rangeEnd);
   }, [space, weekStart, rangeEnd, loadRecipes, loadPlan]);
 
-  // 4-week retention: drop plan data older than the window on entry.
+  // 2-week retention: drop plan data older than the window on entry.
   useEffect(() => {
     if (!space) return;
     void pruneBefore(space.id, retentionCutoff(todayISO(), space.settings.weekStartsOn));
@@ -154,6 +158,15 @@ export default function PlanScreen() {
       const target = picker;
       setPicker(null);
       setQuery('');
+      // The extra Dinner slot (if this was one) is now filled — retire it.
+      if (target.mealType === 'dinner') {
+        setExtraDinner((prev) => {
+          if (!prev.has(target.date)) return prev;
+          const next = new Set(prev);
+          next.delete(target.date);
+          return next;
+        });
+      }
       await place({
         spaceId: space.id,
         date: target.date,
@@ -202,6 +215,9 @@ export default function PlanScreen() {
   const goToWeek = (nextWeekStart: ISODate) =>
     setWeekAnchor(clampWeekStart(nextWeekStart, today, weekStartsOn));
 
+  const revealExtraDinner = (date: ISODate) =>
+    setExtraDinner((prev) => new Set(prev).add(date));
+
   const placeLeftover = async (date: ISODate, mealType: MealType) => {
     const source = leftoverFor;
     setLeftoverFor(null);
@@ -231,16 +247,38 @@ export default function PlanScreen() {
           >
             <Icon name="trash" size={18} />
           </button>
-          <button
-            type="button"
-            className="plan__today"
-            onClick={() => setWeekAnchor(today)}
-            aria-label="Jump to this week"
-          >
-            {fromISODate(weekStart).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-            {' – '}
-            {fromISODate(rangeEnd).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-          </button>
+          <div className="plan__today-group">
+            {/* Desktop-only week nav flanking the date range; on phones the nav
+                lives beside the board instead (see .plan__week-nav). */}
+            <button
+              type="button"
+              className="plan__header-nav plan__header-nav--prev"
+              onClick={() => goToWeek(addDays(weekStart, -7))}
+              disabled={atMin || leftoverMode}
+              aria-label="Previous week"
+            >
+              <Icon name="chevron" size={20} rotate={90} />
+            </button>
+            <button
+              type="button"
+              className="plan__today"
+              onClick={() => setWeekAnchor(today)}
+              aria-label="Jump to this week"
+            >
+              {fromISODate(weekStart).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+              {' – '}
+              {fromISODate(rangeEnd).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+            </button>
+            <button
+              type="button"
+              className="plan__header-nav plan__header-nav--next"
+              onClick={() => goToWeek(addDays(weekStart, 7))}
+              disabled={atMax || leftoverMode}
+              aria-label="Next week"
+            >
+              <Icon name="chevron" size={20} rotate={270} />
+            </button>
+          </div>
           <div className="plan__range" role="group" aria-label="Plan range">
             <button
               type="button"
@@ -298,16 +336,35 @@ export default function PlanScreen() {
               className={`plan__day ${date === today ? 'is-today' : ''}`}
               aria-label={fromISODate(date).toDateString()}
             >
-              <div className="plan__day-heading">
-                <span className="plan__day-name">{formatDayHeading(date).day}</span>
-                <span className="plan__day-num">{formatDayHeading(date).num}</span>
-              </div>
+              <LongPressMenu
+                disabled={leftoverMode}
+                items={[
+                  {
+                    key: 'add-another',
+                    label: 'Add another meal',
+                    icon: 'plus',
+                    onSelect: () => revealExtraDinner(date),
+                  },
+                ]}
+              >
+                {(trigger) => (
+                  <div className="plan__day-heading" {...trigger}>
+                    <span className="plan__day-name">{formatDayHeading(date).day}</span>
+                    <span className="plan__day-num">{formatDayHeading(date).num}</span>
+                  </div>
+                )}
+              </LongPressMenu>
               <div className="plan__day-slots">
                 {mealTypes.map((mealType) => {
                   const slot = makeSlotId(date, mealType);
                   const items = bySlot.get(slot) ?? [];
                   const eligible =
                     leftoverFor !== null && isEligibleLeftoverSlot(leftoverFor, date, mealType);
+                  // Offer an empty add-slot when the slot is still empty, or when
+                  // the day-heading menu has revealed an extra Dinner slot. No
+                  // auto "Another" once a slot is filled.
+                  const showEmpty =
+                    items.length === 0 || (mealType === 'dinner' && extraDinner.has(date));
                   return (
                     <div key={mealType} className="plan__slot">
                       {items.map((p) => (
@@ -338,16 +395,16 @@ export default function PlanScreen() {
                         ) : (
                           <span className="plan__slot-blocked" aria-hidden="true" />
                         )
-                      ) : (
+                      ) : showEmpty ? (
                         <button
                           type="button"
                           className="plan__empty tap-target"
                           onClick={() => setPicker({ date, mealType })}
                         >
                           <Icon name="plus" size={18} />
-                          <span>{items.length > 0 ? 'Another' : MEAL_LABEL[mealType]}</span>
+                          <span>{MEAL_LABEL[mealType]}</span>
                         </button>
-                      )}
+                      ) : null}
                     </div>
                   );
                 })}
@@ -380,7 +437,18 @@ export default function PlanScreen() {
           ) : (
             <>
               <Icon name="basket" size={20} />
-              {plannedCount === 0 ? 'Plan a meal to build a list' : `${generateName} (${plannedCount})`}
+              {plannedCount === 0 ? (
+                <>
+                  <span className="plan__generate-label plan__generate-label--long">
+                    Plan a meal to build a list
+                  </span>
+                  <span className="plan__generate-label plan__generate-label--short">
+                    Plan meal to build list
+                  </span>
+                </>
+              ) : (
+                generateName
+              )}
             </>
           )}
         </button>
@@ -452,16 +520,9 @@ export default function PlanScreen() {
       </BottomSheet>
 
       {/* Clear-week confirmation */}
-      <BottomSheet
-        open={confirmClear}
-        onClose={() => setConfirmClear(false)}
-        title="Clear this week?"
-      >
+      <BottomSheet open={confirmClear} onClose={() => setConfirmClear(false)} hideClose>
         <div className="plan__confirm">
-          <p>
-            This removes every meal shown here and empties the shopping list for it. Your recipes
-            aren&apos;t touched.
-          </p>
+          <p>This resets the plan and the shopping list.</p>
           <button
             type="button"
             className="btn btn--primary btn--block"

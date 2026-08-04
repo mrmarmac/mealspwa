@@ -109,7 +109,7 @@ export default function ShopScreen() {
         <EmptyState
           icon="basket"
           title="No list yet"
-          description="Plan some meals, then generate a list from the plan."
+          description="Plan meals, then make a list."
           action={
             <div className="shop__empty-actions">
               <button type="button" className="btn btn--primary" onClick={() => void handleStart()}>
@@ -117,6 +117,17 @@ export default function ShopScreen() {
               </button>
               <button type="button" className="btn btn--secondary" onClick={() => navigate('/plan')}>
                 Go to plan
+              </button>
+              {/* Settings has no tab of its own; this is its entry point, and it
+                  lives only in the empty state so it disappears once a list is
+                  built. */}
+              <button
+                type="button"
+                className="shop__settings tap-target"
+                onClick={() => navigate('/settings')}
+                aria-label="Settings"
+              >
+                <Icon name="settings" size={20} />
               </button>
             </div>
           }

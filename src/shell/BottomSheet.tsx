@@ -28,6 +28,9 @@ export interface BottomSheetProps {
   initialSnapIndex?: number;
   /** Hides the drag handle / disables swipe-to-dismiss. Rarely needed. */
   disableSwipe?: boolean;
+  /** Hides the header close (×) button while keeping the title. The sheet can
+   * still be dismissed by tapping the backdrop, Escape, or swiping down. */
+  hideClose?: boolean;
 }
 
 const FOCUSABLE_SELECTOR =
@@ -52,6 +55,7 @@ export function BottomSheet({
   snapPoints,
   initialSnapIndex,
   disableSwipe,
+  hideClose,
 }: BottomSheetProps) {
   const titleId = useId();
   const sheetRef = useRef<HTMLDivElement>(null);
@@ -281,15 +285,17 @@ export function BottomSheet({
             <h2 id={titleId} style={{ fontSize: 'var(--font-size-lg)', fontWeight: 'var(--font-weight-bold)' }}>
               {title}
             </h2>
-            <button
-              type="button"
-              aria-label="Close"
-              className="tap-target"
-              onClick={onClose}
-              style={{ color: 'var(--color-text-secondary)' }}
-            >
-              <Icon name="x" size={22} />
-            </button>
+            {!hideClose && (
+              <button
+                type="button"
+                aria-label="Close"
+                className="tap-target"
+                onClick={onClose}
+                style={{ color: 'var(--color-text-secondary)' }}
+              >
+                <Icon name="x" size={22} />
+              </button>
+            )}
           </div>
         ) : null}
         <div style={{ overflowY: 'auto', flex: 1, padding: '0 var(--space-4) var(--space-4)' }}>{children}</div>

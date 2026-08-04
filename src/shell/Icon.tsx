@@ -20,6 +20,7 @@ export type IconName =
   | 'basket'
   | 'calendar'
   | 'book'
+  | 'menu'
   | 'settings';
 
 export interface IconProps extends Omit<SVGProps<SVGSVGElement>, 'name'> {
@@ -118,6 +119,13 @@ const paths: Record<IconName, ReactNode> = {
     <>
       <path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H18a1 1 0 0 1 1 1v15.5a1 1 0 0 1-1 1H6.5A1.5 1.5 0 0 1 5 19V4.5z" />
       <path d="M5 17.5A1.5 1.5 0 0 1 6.5 16H19" />
+    </>
+  ),
+  menu: (
+    <>
+      <line x1="4" y1="7" x2="20" y2="7" />
+      <line x1="4" y1="12" x2="20" y2="12" />
+      <line x1="4" y1="17" x2="20" y2="17" />
     </>
   ),
   settings: (

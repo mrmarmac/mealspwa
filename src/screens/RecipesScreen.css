@@ -17,24 +17,18 @@
   border-bottom: 1px solid var(--color-border);
 }
 
-.recipes__title-row {
+/* Search bar and the two action buttons share one row: the search grows to
+   fill, Import + Add sit to its right. */
+.recipes__search-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-  margin-bottom: var(--space-3);
-}
-
-.recipes__title {
-  font-size: var(--font-size-xxl);
-  font-weight: var(--font-weight-bold);
-  line-height: var(--line-height-tight);
-  margin: 0;
+  gap: var(--space-2);
 }
 
 .recipes__actions {
   display: flex;
   gap: var(--space-2);
+  flex: 0 0 auto;
 }
 
 .recipes__icon-btn {
@@ -58,6 +52,8 @@
 
 .recipes__search {
   display: flex;
+  flex: 1;
+  min-width: 0;
   align-items: center;
   gap: var(--space-2);
   padding: 0 var(--space-3);

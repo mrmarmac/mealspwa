@@ -31,29 +31,29 @@ function makeRecipe(id: string, tags: string[]): Recipe {
 }
 
 describe('filterByTags', () => {
-  const soupDinner = makeRecipe('soupDinner', ['soup', 'dinner']);
-  const sweet = makeRecipe('sweet', ['sweet']);
+  const soupPasta = makeRecipe('soupPasta', ['soup', 'pasta']);
+  const bake = makeRecipe('bake', ['bake']);
   const untagged = makeRecipe('untagged', []);
-  const all = [soupDinner, sweet, untagged];
+  const all = [soupPasta, bake, untagged];
 
   it('returns everything when no tags are selected', () => {
     expect(filterByTags(all, [])).toEqual(all);
   });
 
   it('matches a single tag', () => {
-    expect(filterByTags(all, ['soup'])).toEqual([soupDinner]);
-    expect(filterByTags(all, ['sweet'])).toEqual([sweet]);
+    expect(filterByTags(all, ['soup'])).toEqual([soupPasta]);
+    expect(filterByTags(all, ['bake'])).toEqual([bake]);
   });
 
   it('matches ANY selected tag (OR semantics)', () => {
-    // soup OR sweet -> both the soup recipe and the sweet one.
-    expect(filterByTags(all, ['soup', 'sweet'] as RecipeTag[])).toEqual([soupDinner, sweet]);
-    // dinner OR sweet -> the soup+dinner recipe (has dinner) and the sweet one.
-    expect(filterByTags(all, ['dinner', 'sweet'] as RecipeTag[])).toEqual([soupDinner, sweet]);
+    // soup OR bake -> both the soup recipe and the bake one.
+    expect(filterByTags(all, ['soup', 'bake'] as RecipeTag[])).toEqual([soupPasta, bake]);
+    // pasta OR bake -> the soup+pasta recipe (has pasta) and the bake one.
+    expect(filterByTags(all, ['pasta', 'bake'] as RecipeTag[])).toEqual([soupPasta, bake]);
   });
 
   it('excludes recipes with no matching tag', () => {
-    expect(filterByTags(all, ['lunch'])).toEqual([]);
+    expect(filterByTags(all, ['easy'])).toEqual([]);
     expect(filterByTags([untagged], ['soup'])).toEqual([]);
   });
 });

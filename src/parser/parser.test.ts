@@ -224,6 +224,35 @@ describe('parseIngredientLine — real library lines', () => {
   }
 });
 
+describe('garlic is always measured in cloves', () => {
+  it('keeps an explicit clove count', () => {
+    const p = parseLine('2 cloves garlic, crushed');
+    expect(p.itemKey).toBe('garlic');
+    expect(p.unit).toBe('clove');
+    expect(p.unitKind).toBe('count');
+  });
+
+  it('coerces a mass to cloves', () => {
+    const p = parseLine('200g garlic');
+    expect(p.itemKey).toBe('garlic');
+    expect(p.unit).toBe('clove');
+    expect(p.unitKind).toBe('count');
+  });
+
+  it('coerces a bare count to cloves', () => {
+    const p = parseLine('2 garlic');
+    expect(p.itemKey).toBe('garlic');
+    expect(p.unit).toBe('clove');
+    expect(p.unitKind).toBe('count');
+  });
+
+  it('leaves garlic powder alone (a different item)', () => {
+    const p = parseLine('1 tbsp garlic powder');
+    expect(p.itemKey).toBe('garlic powder');
+    expect(p.unit).toBe('tbsp');
+  });
+});
+
 describe('numbers', () => {
   it('reads mixed numbers, fractions and decimals', () => {
     expect(parseQuantityPrefix('1 1/2 cups flour')!.qty.low).toBeCloseTo(1.5);

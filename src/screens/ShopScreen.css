@@ -55,6 +55,23 @@
   align-items: stretch;
 }
 
+/* Circular gear that drops the user into Settings. Sits below the two primary
+   actions with clear separation, centred on their shared axis. */
+.shop__settings {
+  align-self: center;
+  margin-top: var(--space-5);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--touch-target-min);
+  height: var(--touch-target-min);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
 .shop__group {
   padding: var(--space-4) var(--space-4) 0;
 }

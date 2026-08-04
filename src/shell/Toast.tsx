@@ -125,8 +125,13 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               // Content-width pill, never full bleed — small and unobtrusive.
               maxWidth: '100%',
               width: 'auto',
-              background: t.variant === 'error' ? 'var(--color-danger)' : 'var(--color-text)',
-              color: 'var(--color-text-on-primary)',
+              // A raised-surface pill (like the menus/sheets) rather than an
+              // inverted one, so the text stays readable in both themes — an
+              // inverted `--color-text` background is near-white in dark mode.
+              background:
+                t.variant === 'error' ? 'var(--color-danger)' : 'var(--color-surface-raised)',
+              color: t.variant === 'error' ? 'var(--color-text-on-primary)' : 'var(--color-text)',
+              border: '1px solid var(--color-border)',
               borderRadius: 'var(--radius-pill)',
               padding: 'var(--space-2) var(--space-4)',
               boxShadow: 'var(--shadow-md)',
