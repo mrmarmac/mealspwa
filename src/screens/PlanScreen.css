@@ -21,14 +21,33 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-3);
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-3);
 }
 
 .plan__title {
+  flex: 0 0 auto;
   font-size: var(--font-size-xxl);
   font-weight: var(--font-weight-bold);
   line-height: var(--line-height-tight);
   margin: 0;
+}
+
+/* Date range now lives in the title row and jumps back to this week. */
+.plan__today {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  text-align: center;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  white-space: nowrap;
 }
 
 .plan__range {
@@ -80,15 +99,38 @@
   cursor: default;
 }
 
-.plan__nav {
+/* --- board + flanking week navigation ------------------------------------ */
+
+/* The board sits between two tall week-nav buttons: Previous on the left of
+   Monday, Next on the right of Sunday. Each button's hit area stretches the
+   full height of the board. */
+.plan__body {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: var(--space-2);
+  align-items: stretch;
+  gap: var(--space-1);
 }
 
-.plan__nav-btn:disabled {
-  opacity: 0.3;
+.plan__week-nav {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  min-height: var(--touch-target-min);
+  border: 0;
+  background: transparent;
+  color: var(--color-text-secondary);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.plan__week-nav:active {
+  background: var(--color-primary-soft);
+  color: var(--color-primary-strong);
+}
+
+.plan__week-nav:disabled {
+  opacity: 0.25;
   cursor: default;
 }
 
@@ -196,7 +238,17 @@
 }
 
 .plan__board {
-  padding: var(--space-3) var(--space-4) 0;
+  flex: 1;
+  min-width: 0;
+  padding: var(--space-3) var(--space-2) 0;
+}
+
+/* Content-sized build-list button, centered below the board (no full-width
+   sticky bar). */
+.plan__generate {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-4) var(--space-4) var(--space-8);
 }
 
 .plan__day {
@@ -406,7 +458,11 @@
    44px iOS minimum. We shrink the gaps and chrome, never the hit areas. */
 @media (max-width: 599px) {
   .plan__board {
-    padding: var(--space-2) var(--space-3) 0;
+    padding: var(--space-2) var(--space-1) 0;
+  }
+
+  .plan__week-nav {
+    width: 32px;
   }
 
   .plan__day {
@@ -434,16 +490,19 @@
 @media (min-width: 900px) {
   .plan__header,
   .plan__leftover-banner,
-  .sticky-cta {
-    max-width: 1100px;
+  .plan__body,
+  .plan__generate {
+    max-width: 1180px;
     margin-left: auto;
     margin-right: auto;
   }
 
+  .plan__body {
+    padding: var(--space-5) var(--space-4) 0;
+  }
+
   .plan__board {
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: var(--space-5) var(--space-5) 0;
+    padding: 0;
     display: grid;
     grid-template-columns: repeat(7, minmax(0, 1fr));
     gap: var(--space-3);
