@@ -9,7 +9,7 @@ import { seedSpace } from '@/seed';
 import { uuidv7 } from '@/domain/primitives';
 import { DEFAULT_SETTINGS, SCHEMA_VERSION, type Space, type SpaceSettings } from '@/domain/types';
 
-const ACTIVE_SPACE_ID_META_KEY = 'activeSpaceId';
+export const ACTIVE_SPACE_ID_META_KEY = 'activeSpaceId';
 
 interface SpaceStoreState {
   space: Space | null;
@@ -20,6 +20,10 @@ interface SpaceStoreState {
    *  first ever launch. Safe to call more than once — subsequent calls are
    *  no-ops while already initialized or in flight. */
   init(): Promise<void>;
+  /** Re-read the active space from storage (e.g. after a remote sync pull
+   *  applied a settings/name change from the other device). No-op if no space
+   *  is active yet. */
+  reload(): Promise<void>;
   updateSettings(patch: Partial<SpaceSettings>): Promise<void>;
 }
 
@@ -75,6 +79,13 @@ export const useSpaceStore = create<SpaceStoreState>((set, get) => ({
     } catch (err) {
       set({ error: errorMessage(err), loading: false });
     }
+  },
+
+  async reload() {
+    const current = get().space;
+    if (!current) return;
+    const fresh = await spaceRepo.get(current.id);
+    if (fresh) set({ space: fresh });
   },
 
   async updateSettings(patch) {
