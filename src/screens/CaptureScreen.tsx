@@ -17,6 +17,7 @@ import { RECIPE_TAGS, type RecipeTag } from '@/domain/types';
 import { useSpaceStore } from '@/store/useSpaceStore';
 import { useRecipeStore } from '@/store/useRecipeStore';
 import { fetchRecipeFromUrl } from '@/lib/fetcher';
+import { BottomSheet } from '@/shell/BottomSheet';
 import { Icon } from '@/shell/Icon';
 import { Spinner } from '@/shell/Spinner';
 import { useToast } from '@/shell/Toast';
@@ -38,6 +39,7 @@ export default function CaptureScreen() {
   const recipes = useRecipeStore((s) => s.recipes);
   const load = useRecipeStore((s) => s.load);
   const saveRecipe = useRecipeStore((s) => s.saveRecipe);
+  const deleteRecipe = useRecipeStore((s) => s.deleteRecipe);
 
   const editId = params.get('edit');
   const [name, setName] = useState('');
@@ -48,6 +50,7 @@ export default function CaptureScreen() {
   const [fetching, setFetching] = useState(false);
   const [saving, setSaving] = useState(false);
   const [prefilled, setPrefilled] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   useEffect(() => {
     void initSpace();
@@ -136,6 +139,15 @@ export default function CaptureScreen() {
     }
   }, [space, name, sourceUrl, ingredientsRaw, method, tags, editId, saveRecipe, navigate, toast]);
 
+  const handleDelete = useCallback(async () => {
+    if (!editId) return;
+    setConfirmDelete(false);
+    const deletedName = name.trim() || 'recipe';
+    await deleteRecipe(editId);
+    toast.show({ message: `Deleted ${deletedName}`, variant: 'success' });
+    navigate('/recipes');
+  }, [editId, name, deleteRecipe, toast, navigate]);
+
   const toggleTag = (tag: RecipeTag) =>
     setTags((prev) => (prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]));
 
@@ -154,6 +166,19 @@ export default function CaptureScreen() {
         </button>
         <h1 className="capture__title">{editId ? 'Edit recipe' : 'Add recipe'}</h1>
       </header>
+
+      {/* Delete lives only in the editor, front and centre, so it's a
+          deliberate act — not a stray tap while viewing a recipe. */}
+      {editId && (
+        <button
+          type="button"
+          className="capture__delete tap-target"
+          onClick={() => setConfirmDelete(true)}
+        >
+          <Icon name="trash" size={18} />
+          Delete recipe
+        </button>
+      )}
 
       <label className="capture__field">
         <span className="capture__label">Name</span>
@@ -278,6 +303,36 @@ export default function CaptureScreen() {
           {saving ? <Spinner size={18} label="Saving" /> : 'Save recipe'}
         </button>
       </div>
+
+      <BottomSheet
+        open={confirmDelete}
+        onClose={() => setConfirmDelete(false)}
+        title={`Delete ${name.trim() || 'this recipe'}?`}
+        hideClose
+      >
+        <div className="capture__confirm">
+          {/* The plan is the truth: deleting from the library never silently
+              rewrites meals you already planned. */}
+          <p>
+            This will delete it permanently from your recipes, but any meals you've already planned
+            with it will stay on the board and the ingredient will stay in the shopping list.
+          </p>
+          <button
+            type="button"
+            className="btn btn--primary btn--block"
+            onClick={() => void handleDelete()}
+          >
+            Delete
+          </button>
+          <button
+            type="button"
+            className="btn btn--secondary btn--block"
+            onClick={() => setConfirmDelete(false)}
+          >
+            Keep it
+          </button>
+        </div>
+      </BottomSheet>
     </div>
   );
 }

@@ -77,6 +77,24 @@
   border-radius: 0 0 var(--radius-md) var(--radius-md);
 }
 
+/* A row label that carries a secondary descriptor line beneath it. Takes the
+   free width so the description can wrap while the control on the right keeps
+   its size. */
+.settings__row-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding: var(--space-2) 0;
+}
+
+.settings__row-desc {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-tight);
+}
+
 .settings__row input,
 .settings__row select {
   min-height: 38px;
@@ -92,14 +110,6 @@
 .settings__row input[type='number'] {
   width: 72px;
   text-align: right;
-}
-
-.settings__aisles {
-  margin: 0;
-  padding-left: var(--space-6);
-  font-size: var(--font-size-sm);
-  color: var(--color-text-secondary);
-  line-height: var(--line-height-normal);
 }
 
 .settings__buttons {

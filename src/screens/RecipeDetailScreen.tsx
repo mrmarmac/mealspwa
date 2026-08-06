@@ -3,15 +3,13 @@
  * headings) plus the method. Low-confidence lines are visibly flagged here,
  * because this is where a bad parse is cheapest to notice and fix.
  */
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import type { ParsedIngredientLine } from '@/domain/types';
+import { RECIPE_TAGS, type ParsedIngredientLine, type RecipeTag } from '@/domain/types';
 import { useSpaceStore } from '@/store/useSpaceStore';
 import { useRecipeStore } from '@/store/useRecipeStore';
-import { BottomSheet } from '@/shell/BottomSheet';
 import { Icon } from '@/shell/Icon';
 import { Spinner } from '@/shell/Spinner';
-import { useToast } from '@/shell/Toast';
 import './RecipeDetailScreen.css';
 
 /** Where "Back" should return to: the screen we arrived from (passed through
@@ -38,7 +36,6 @@ export default function RecipeDetailScreen() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
-  const toast = useToast();
   const back = backTarget(location.state);
 
   const space = useSpaceStore((s) => s.space);
@@ -46,8 +43,7 @@ export default function RecipeDetailScreen() {
   const recipes = useRecipeStore((s) => s.recipes);
   const loaded = useRecipeStore((s) => s.loaded);
   const load = useRecipeStore((s) => s.load);
-  const deleteRecipe = useRecipeStore((s) => s.deleteRecipe);
-  const [confirmDelete, setConfirmDelete] = useState(false);
+  const setTags = useRecipeStore((s) => s.setTags);
 
   useEffect(() => {
     void initSpace();
@@ -59,6 +55,29 @@ export default function RecipeDetailScreen() {
 
   const recipe = useMemo(() => recipes.find((r) => r.id === id), [recipes, id]);
   const sections = useMemo(() => (recipe ? groupBySection(recipe.ingredients) : []), [recipe]);
+  // Only the known vocabulary is toggleable; any legacy free-form tag is
+  // ignored here rather than shown as an un-editable chip.
+  const activeTags = useMemo(
+    () =>
+      new Set(
+        (recipe?.tags ?? []).filter((t): t is RecipeTag =>
+          (RECIPE_TAGS as readonly string[]).includes(t),
+        ),
+      ),
+    [recipe],
+  );
+
+  const toggleTag = (tag: RecipeTag) => {
+    if (!recipe) return;
+    const next = new Set(activeTags);
+    if (next.has(tag)) next.delete(tag);
+    else next.add(tag);
+    // Persist in the vocabulary's own order so tags read consistently.
+    void setTags(
+      recipe.id,
+      RECIPE_TAGS.filter((t) => next.has(t)),
+    );
+  };
 
   if (!space || !loaded) {
     return (
@@ -99,14 +118,6 @@ export default function RecipeDetailScreen() {
           >
             <Icon name="menu" size={20} />
           </button>
-          <button
-            type="button"
-            className="detail__icon-btn tap-target"
-            onClick={() => setConfirmDelete(true)}
-            aria-label="Delete recipe"
-          >
-            <Icon name="trash" size={20} />
-          </button>
         </div>
       </header>
 
@@ -117,6 +128,26 @@ export default function RecipeDetailScreen() {
           {recipe.sourceDomain ?? 'Source'}
         </a>
       )}
+
+      {/* Tags are viewed and changed right here — no need to open the editor.
+          Every tag in the vocabulary shows as a toggle; active ones are
+          filled. */}
+      <div className="detail__tags" role="group" aria-label="Recipe tags">
+        {RECIPE_TAGS.map((tag) => {
+          const active = activeTags.has(tag);
+          return (
+            <button
+              key={tag}
+              type="button"
+              className={`detail__tag ${active ? 'is-active' : ''}`}
+              onClick={() => toggleTag(tag)}
+              aria-pressed={active}
+            >
+              {tag}
+            </button>
+          );
+        })}
+      </div>
 
       <section className="detail__section">
         <h2 className="detail__section-title">Ingredients</h2>
@@ -145,41 +176,6 @@ export default function RecipeDetailScreen() {
           <p className="detail__method">{recipe.method}</p>
         </section>
       )}
-
-      <BottomSheet
-        open={confirmDelete}
-        onClose={() => setConfirmDelete(false)}
-        title={`Delete ${recipe.name}?`}
-        hideClose
-      >
-        <div className="detail__confirm">
-          {/* The plan is the truth: deleting from the library never silently
-              rewrites meals you already planned. */}
-          <p>
-            This will delete it permanently from your recipes, but any meals you've already planned
-            with it will stay on the board and the ingredient will stay in the shopping list.
-          </p>
-          <button
-            type="button"
-            className="btn btn--primary btn--block"
-            onClick={async () => {
-              setConfirmDelete(false);
-              await deleteRecipe(recipe.id);
-              toast.show({ message: `Deleted ${recipe.name}`, variant: 'success' });
-              navigate('/recipes');
-            }}
-          >
-            Delete
-          </button>
-          <button
-            type="button"
-            className="btn btn--secondary btn--block"
-            onClick={() => setConfirmDelete(false)}
-          >
-            Keep it
-          </button>
-        </div>
-      </BottomSheet>
     </div>
   );
 }

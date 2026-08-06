@@ -214,7 +214,7 @@ export interface Recipe extends Syncable {
 
 /** The fixed vocabulary of recipe tags. Deliberately closed: a short, shared
  *  set keeps filtering meaningful (free-form tags fragment into synonyms). */
-export const RECIPE_TAGS = ['pasta', 'bake', 'easy', 'fresh', 'soup', 'spicy'] as const;
+export const RECIPE_TAGS = ['pasta', 'bake', 'easy', 'salad', 'soup', 'spicy', 'meat'] as const;
 export type RecipeTag = (typeof RECIPE_TAGS)[number];
 
 /** Kept forever after a hard purge so a stale placement can still show a name. */

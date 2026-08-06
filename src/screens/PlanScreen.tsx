@@ -591,9 +591,19 @@ function MealCard({
     );
   }
 
+  // Only offer "Go to recipe card" when there's actually a recipe behind this
+  // placement (a free-text meal has none).
+  const goToRecipe = placement.recipeId
+    ? [{ key: 'open', label: 'Go to recipe card', icon: 'book' as const, onSelect: onOpen }]
+    : [];
+
   const items = isLeftover
-    ? [{ key: 'remove', label: 'Remove', icon: 'trash' as const, onSelect: onRemove, destructive: true }]
+    ? [
+        ...goToRecipe,
+        { key: 'remove', label: 'Remove', icon: 'trash' as const, onSelect: onRemove, destructive: true },
+      ]
     : [
+        ...goToRecipe,
         ...MULTIPLIERS.map((m) => ({
           key: `x${m}`,
           label: `Cook ${formatMultiplier(m)}`,
@@ -605,13 +615,15 @@ function MealCard({
         { key: 'remove', label: 'Remove', icon: 'trash' as const, onSelect: onRemove, destructive: true },
       ];
 
+  // A tap/click opens this menu instead of navigating; "Go to recipe card"
+  // above is now the way through to the recipe. Right-click / short tap do
+  // nothing (see LongPressMenu's openOnClick).
   return (
-    <LongPressMenu items={items}>
+    <LongPressMenu items={items} openOnClick>
       {(trigger) => (
         <button
           type="button"
           className={`meal-card ${isLeftover ? 'meal-card--leftover' : ''}`}
-          onClick={onOpen}
           {...trigger}
         >
           {cardContent}

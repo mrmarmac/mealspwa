@@ -28,6 +28,7 @@ export interface LongPressMenuTriggerProps {
   onPointerUp: (e: ReactPointerEvent) => void;
   onPointerCancel: (e: ReactPointerEvent) => void;
   onContextMenu: (e: ReactMouseEvent) => void;
+  onClick: (e: ReactMouseEvent) => void;
 }
 
 export interface LongPressMenuProps {
@@ -39,6 +40,13 @@ export interface LongPressMenuProps {
   pressDurationMs?: number;
   /** Finger movement, in px, that cancels a pending long-press. @default 10 */
   moveCancelThresholdPx?: number;
+  /**
+   * Open on a plain desktop left-click (or keyboard activation) rather than a
+   * right-click, and make right-click a no-op. Touch is unchanged — long-press
+   * opens, a short tap does nothing. Used by the plan board's placed meal
+   * cards, where a tap should reveal actions, not navigate away.
+   */
+  openOnClick?: boolean;
   disabled?: boolean;
 }
 
@@ -55,6 +63,7 @@ export function LongPressMenu({
   children,
   pressDurationMs = 500,
   moveCancelThresholdPx = 10,
+  openOnClick = false,
   disabled,
 }: LongPressMenuProps) {
   const [anchor, setAnchor] = useState<{ x: number; y: number } | null>(null);
@@ -63,6 +72,10 @@ export function LongPressMenu({
 
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const startRef = useRef<{ x: number; y: number } | null>(null);
+  // Which input drove the last interaction — a `click` event alone can't tell a
+  // mouse click from the tap that follows a touch, and only the mouse click
+  // should open a click-to-open menu.
+  const lastPointerTypeRef = useRef<string>('mouse');
 
   const clearTimer = useCallback(() => {
     if (timerRef.current) {
@@ -78,7 +91,8 @@ export function LongPressMenu({
 
   const onPointerDown = useCallback(
     (e: ReactPointerEvent) => {
-      if (disabled || e.pointerType === 'mouse') return; // mouse uses contextmenu
+      lastPointerTypeRef.current = e.pointerType;
+      if (disabled || e.pointerType === 'mouse') return; // mouse uses click/contextmenu
       const x = e.clientX;
       const y = e.clientY;
       startRef.current = { x, y };
@@ -89,6 +103,25 @@ export function LongPressMenu({
       }, pressDurationMs);
     },
     [clearTimer, disabled, pressDurationMs],
+  );
+
+  const onClick = useCallback(
+    (e: ReactMouseEvent) => {
+      if (disabled || !openOnClick) return;
+      // A touch tap also fires `click`; only a real mouse click (or keyboard
+      // activation) should open the menu — a tap must do nothing.
+      if (lastPointerTypeRef.current === 'touch') return;
+      let x = e.clientX;
+      let y = e.clientY;
+      // Keyboard activation carries no coordinates; anchor to the element.
+      if (x === 0 && y === 0) {
+        const rect = e.currentTarget.getBoundingClientRect();
+        x = rect.left + rect.width / 2;
+        y = rect.top + rect.height / 2;
+      }
+      setAnchor({ x, y });
+    },
+    [disabled, openOnClick],
   );
 
   const onPointerMove = useCallback(
@@ -114,9 +147,12 @@ export function LongPressMenu({
     (e: ReactMouseEvent) => {
       if (disabled) return;
       e.preventDefault();
+      // For click-to-open triggers a right-click deliberately does nothing (the
+      // native menu is still suppressed above).
+      if (openOnClick) return;
       setAnchor({ x: e.clientX, y: e.clientY });
     },
-    [disabled],
+    [disabled, openOnClick],
   );
 
   // Clamp the menu into the viewport once we know its rendered size.
@@ -164,6 +200,7 @@ export function LongPressMenu({
         onPointerUp: onPointerEnd,
         onPointerCancel: onPointerEnd,
         onContextMenu,
+        onClick,
       })}
       {anchor
         ? createPortal(
