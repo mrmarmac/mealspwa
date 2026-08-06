@@ -367,9 +367,13 @@ export default function SettingsScreen() {
           Drag isn't wired up yet — this is the order aisles appear in.
         </p>
         <ol className="settings__aisles">
-          {s.aisleOrder.map((a) => (
-            <li key={a}>{AISLE_LABELS[a]}</li>
-          ))}
+          {s.aisleOrder
+            // Several categories share one aisle label; collapse the repeats so
+            // this reads as the list of aisles the shopper actually sees.
+            .filter((a, i, arr) => i === 0 || AISLE_LABELS[a] !== AISLE_LABELS[arr[i - 1]!])
+            .map((a) => (
+              <li key={a}>{AISLE_LABELS[a]}</li>
+            ))}
         </ol>
       </section>
 

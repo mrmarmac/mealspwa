@@ -7,7 +7,13 @@ import { create } from 'zustand';
 import { getMeta, setMeta, spaceRepo } from '@/db/repo';
 import { seedSpace } from '@/seed';
 import { uuidv7 } from '@/domain/primitives';
-import { DEFAULT_SETTINGS, SCHEMA_VERSION, type Space, type SpaceSettings } from '@/domain/types';
+import {
+  DEFAULT_AISLE_ORDER,
+  DEFAULT_SETTINGS,
+  SCHEMA_VERSION,
+  type Space,
+  type SpaceSettings,
+} from '@/domain/types';
 
 export const ACTIVE_SPACE_ID_META_KEY = 'activeSpaceId';
 
@@ -74,6 +80,23 @@ export const useSpaceStore = create<SpaceStoreState>((set, get) => ({
       // on every init: it also recovers a space whose first-launch seeding
       // was interrupted before the flag was set.
       await seedSpace(space.id);
+
+      // The aisle order isn't user-editable yet (the drag UI isn't wired up),
+      // so a space created under an older default still carries that stale
+      // order, which is what derive.ts groups the shopping list by. Reconcile
+      // it to the current default once. Safe precisely because there's no user
+      // customisation to preserve; the write is skipped once it already
+      // matches, so this doesn't churn on every launch.
+      const order = space.settings.aisleOrder;
+      const stale =
+        order.length !== DEFAULT_AISLE_ORDER.length ||
+        order.some((c, i) => c !== DEFAULT_AISLE_ORDER[i]);
+      if (stale) {
+        space = await spaceRepo.put({
+          ...space,
+          settings: { ...space.settings, aisleOrder: DEFAULT_AISLE_ORDER },
+        });
+      }
 
       set({ space, loading: false, initialized: true });
     } catch (err) {
