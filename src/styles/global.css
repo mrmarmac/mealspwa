@@ -14,6 +14,13 @@ html,
 body,
 #root {
   height: 100%;
+  /* On mobile the collapsing browser toolbars make 100% (the *large* viewport)
+     taller than what's actually on screen, so the fixed tab bar — and the
+     build-list button scrolled just above it — get pushed below the visible
+     fold and can't be scrolled fully into view. dvh tracks the visible height
+     so the bar sits at the true bottom and the button reaches it. Declared
+     second as progressive enhancement: browsers without dvh keep 100%. */
+  height: 100dvh;
 }
 
 html {
