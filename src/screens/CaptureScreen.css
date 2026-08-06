@@ -31,6 +31,42 @@
   font-weight: var(--font-weight-bold);
 }
 
+/* Delete lives at the top of the editor, centred and in the danger colour so
+   it reads as a deliberate, destructive action rather than a stray control. */
+.capture__delete {
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--touch-target-min);
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--color-danger);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-danger);
+  font: inherit;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+}
+
+.capture__delete:active {
+  background: var(--color-danger-soft);
+}
+
+.capture__confirm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.capture__confirm p {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
 .capture__field {
   display: flex;
   flex-direction: column;

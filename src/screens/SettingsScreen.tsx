@@ -7,7 +7,6 @@
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AISLE_LABELS, type MeasurementDialect } from '@/domain/types';
 import type { Id } from '@/domain/primitives';
 import { useSpaceStore } from '@/store/useSpaceStore';
 import { useSyncStore } from '@/store/useSyncStore';
@@ -16,12 +15,6 @@ import { Icon } from '@/shell/Icon';
 import { Spinner } from '@/shell/Spinner';
 import { useToast } from '@/shell/Toast';
 import './SettingsScreen.css';
-
-const DIALECTS: { value: MeasurementDialect; label: string }[] = [
-  { value: 'metric-uk', label: 'UK (15ml tbsp)' },
-  { value: 'metric-au', label: 'Australia (20ml tbsp)' },
-  { value: 'us', label: 'US (240ml cup)' },
-];
 
 function formatTime(iso: string | null): string {
   if (!iso) return 'never';
@@ -311,7 +304,12 @@ export default function SettingsScreen() {
       <section className="settings__section">
         <h2 className="settings__section-title">Household</h2>
         <label className="settings__row">
-          <span>People</span>
+          <span className="settings__row-text">
+            <span>People</span>
+            <span className="settings__row-desc">
+              So ingredients listed as 'per person' will calculate automatically.
+            </span>
+          </span>
           <input
             type="number"
             min={1}
@@ -344,37 +342,6 @@ export default function SettingsScreen() {
             <option value={14}>Fortnight</option>
           </select>
         </label>
-        <label className="settings__row">
-          <span>Measurements</span>
-          <select
-            value={s.dialect}
-            onChange={(e) =>
-              void updateSettings({ dialect: e.target.value as MeasurementDialect })
-            }
-          >
-            {DIALECTS.map((d) => (
-              <option key={d.value} value={d.value}>
-                {d.label}
-              </option>
-            ))}
-          </select>
-        </label>
-      </section>
-
-      <section className="settings__section">
-        <h2 className="settings__section-title">Shopping list order</h2>
-        <p className="settings__hint">
-          Drag isn't wired up yet — this is the order aisles appear in.
-        </p>
-        <ol className="settings__aisles">
-          {s.aisleOrder
-            // Several categories share one aisle label; collapse the repeats so
-            // this reads as the list of aisles the shopper actually sees.
-            .filter((a, i, arr) => i === 0 || AISLE_LABELS[a] !== AISLE_LABELS[arr[i - 1]!])
-            .map((a) => (
-              <li key={a}>{AISLE_LABELS[a]}</li>
-            ))}
-        </ol>
       </section>
 
       <SyncSection spaceId={space.id} />

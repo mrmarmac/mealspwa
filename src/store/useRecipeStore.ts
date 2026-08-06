@@ -95,6 +95,10 @@ interface RecipeStoreState {
   saveRecipe(input: SaveRecipeInput): Promise<Recipe>;
   deleteRecipe(recipeId: Id): Promise<void>;
   archiveRecipe(recipeId: Id, archived?: boolean): Promise<Recipe | undefined>;
+  /** Sets a recipe's tags directly. No re-parse — tags don't touch the
+   *  ingredient cache — so this is cheap enough to fire on every toggle from
+   *  the recipe view. */
+  setTags(recipeId: Id, tags: string[]): Promise<Recipe | undefined>;
   /** Upserts a single override by `lineKey`, then re-parses so the change is
    *  reflected in `ingredients` immediately. */
   setOverride(recipeId: Id, override: IngredientOverride): Promise<Recipe | undefined>;
@@ -198,6 +202,14 @@ export const useRecipeStore = create<RecipeStoreState>((set, get) => ({
     const existing = get().recipes.find((r) => r.id === recipeId) ?? (await recipeRepo.get(recipeId));
     if (!existing) return undefined;
     const saved = await recipeRepo.put({ ...existing, archived });
+    set((s) => ({ recipes: replaceInList(s.recipes, saved) }));
+    return saved;
+  },
+
+  async setTags(recipeId, tags) {
+    const existing = get().recipes.find((r) => r.id === recipeId) ?? (await recipeRepo.get(recipeId));
+    if (!existing) return undefined;
+    const saved = await recipeRepo.put({ ...existing, tags });
     set((s) => ({ recipes: replaceInList(s.recipes, saved) }));
     return saved;
   },

@@ -112,16 +112,33 @@
   color: var(--color-text-secondary);
 }
 
-.detail__confirm {
+/* Selectable tag chips, shown right on the recipe so tags can be changed
+   without opening the editor. Mirrors the capture-screen tag control. */
+.detail__tags {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
 }
 
-.detail__confirm p {
-  margin: 0;
-  font-size: var(--font-size-sm);
+.detail__tag {
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
   color: var(--color-text-secondary);
+  font: inherit;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  text-transform: capitalize;
+  padding: var(--space-1) var(--space-3);
+  min-height: 34px;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+
+.detail__tag.is-active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-text-on-primary);
 }
 
 /* Desktop: tighter ingredient rows — ~20% shorter and a slightly smaller font
