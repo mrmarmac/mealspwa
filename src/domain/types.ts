@@ -434,38 +434,45 @@ export interface DerivedShoppingList {
 // Defaults
 // ---------------------------------------------------------------------------
 
+// The supermarket-loop order the list is grouped by. Several fine-grained
+// categories share a shopper-facing aisle name (see AISLE_LABELS) — e.g. the
+// chilled plant-based items sit under "Dairy & eggs", the deli counter under
+// "Meat & fish", and cans/oils/spices all under "Tins, sauces, spices" — so
+// the list shows one header per aisle even though categorisation stays
+// fine-grained under the hood. Consecutive same-label groups are merged where
+// they're rendered. `staples` ("Check you have") is always pinned last.
 export const DEFAULT_AISLE_ORDER: AisleCategory[] = [
   'produce',
-  'bakery',
-  'meat-seafood',
-  'deli',
   'dairy-eggs',
   'chilled-plant',
-  'frozen',
-  'cans-jars',
+  'meat-seafood',
+  'deli',
+  'bakery',
   'dry-goods',
+  'cans-jars',
   'oils-sauces',
   'herbs-spices',
   'drinks',
   'household',
+  'frozen',
   'other',
   'staples',
 ];
 
 export const AISLE_LABELS: Record<AisleCategory, string> = {
-  produce: 'Fruit & veg',
-  bakery: 'Bakery',
-  'meat-seafood': 'Meat & fish',
-  deli: 'Deli',
+  produce: 'Fruit & vegetables',
   'dairy-eggs': 'Dairy & eggs',
-  'chilled-plant': 'Chilled',
+  'chilled-plant': 'Dairy & eggs',
+  'meat-seafood': 'Meat & fish',
+  deli: 'Meat & fish',
+  bakery: 'Bakery',
+  'dry-goods': 'Pasta, grains',
+  'cans-jars': 'Tins, sauces, spices',
+  'oils-sauces': 'Tins, sauces, spices',
+  'herbs-spices': 'Tins, sauces, spices',
+  drinks: 'Snacks & drinks',
+  household: 'House & personal care',
   frozen: 'Frozen',
-  'cans-jars': 'Tins & jars',
-  'dry-goods': 'Dry goods',
-  'oils-sauces': 'Oils & sauces',
-  'herbs-spices': 'Herbs & spices',
-  drinks: 'Drinks',
-  household: 'Household',
   other: 'Other',
   staples: 'Check you have',
 };

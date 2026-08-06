@@ -93,7 +93,27 @@ export default function ShopScreen() {
 
   const groups = useMemo(() => list?.groups.filter((g) => g.lines.length > 0) ?? [], [list]);
   const staples = useMemo(() => groups.find((g) => g.category === 'staples'), [groups]);
-  const aisles = useMemo(() => groups.filter((g) => g.category !== 'staples'), [groups]);
+  // Several fine-grained categories map to one shopper-facing aisle name (see
+  // AISLE_LABELS), so fold consecutive groups that share a label into a single
+  // section — the list stays ordered by DEFAULT_AISLE_ORDER, which keeps those
+  // categories adjacent. Lines are re-sorted by name across the merge so a
+  // folded aisle reads as one alphabetised list, not two concatenated ones.
+  const aisles = useMemo(() => {
+    const merged: { key: string; label: string; lines: ShoppingLine[] }[] = [];
+    for (const g of groups) {
+      if (g.category === 'staples') continue;
+      const label = AISLE_LABELS[g.category];
+      const last = merged[merged.length - 1];
+      if (last && last.label === label) last.lines.push(...g.lines);
+      else merged.push({ key: g.category, label, lines: [...g.lines] });
+    }
+    for (const a of merged) {
+      a.lines.sort(
+        (x, y) => x.displayName.localeCompare(y.displayName) || x.lineKey.localeCompare(y.lineKey),
+      );
+    }
+    return merged;
+  }, [groups]);
 
   if (!space || (loading && !list)) {
     return (
@@ -164,8 +184,8 @@ export default function ShopScreen() {
       </header>
 
       {aisles.map((group) => (
-        <section key={group.category} className="shop__group">
-          <h2 className="shop__group-title">{AISLE_LABELS[group.category]}</h2>
+        <section key={group.key} className="shop__group">
+          <h2 className="shop__group-title">{group.label}</h2>
           <ul className="shop__lines">
             {group.lines.map((line) => (
               <ShopRow

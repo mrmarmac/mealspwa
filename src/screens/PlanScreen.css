@@ -565,9 +565,21 @@
   .plan__leftover-banner,
   .plan__body,
   .plan__generate {
-    max-width: 1240px;
+    /* Wider board so the seven day cards fill a 13" MacBook Pro screen when the
+       PWA is full-screen, instead of stranding ~100px of dead margin each
+       side. */
+    max-width: 1400px;
     margin-left: auto;
     margin-right: auto;
+  }
+
+  /* Symmetric side columns (equal 1fr each) so the centre column — the date
+     range — sits on the true header centre, which lines up with the middle
+     (Thu) day card and the centred build-list button below. With the default
+     `auto 1fr auto` the wider range toggle on the right pulls the date range
+     off-centre to the left. */
+  .plan__title-row {
+    grid-template-columns: 1fr auto 1fr;
   }
 
   /* Week nav moves into the header, flanking the date range; the board-flanking
