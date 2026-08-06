@@ -435,12 +435,13 @@ export interface DerivedShoppingList {
 // ---------------------------------------------------------------------------
 
 // The supermarket-loop order the list is grouped by. Several fine-grained
-// categories share a shopper-facing aisle name (see AISLE_LABELS) — e.g. the
-// chilled plant-based items sit under "Dairy & eggs", the deli counter under
-// "Meat & fish", and cans/oils/spices all under "Tins, sauces, spices" — so
-// the list shows one header per aisle even though categorisation stays
-// fine-grained under the hood. Consecutive same-label groups are merged where
-// they're rendered. `staples` ("Check you have") is always pinned last.
+// categories share a shopper-facing aisle name (see AISLE_LABELS) — chilled
+// plant-based items sit under "Dairy & eggs", the deli counter under "Meat &
+// fish", dry goods + cans + oils + spices all under "Pasta, grains, tins,
+// sauces, spices", and household under "Other" — so the list shows one header
+// per aisle even though categorisation stays fine-grained under the hood.
+// Consecutive same-label groups are merged where they're rendered. `staples`
+// ("Check you have") is always pinned last.
 export const DEFAULT_AISLE_ORDER: AisleCategory[] = [
   'produce',
   'dairy-eggs',
@@ -453,8 +454,8 @@ export const DEFAULT_AISLE_ORDER: AisleCategory[] = [
   'oils-sauces',
   'herbs-spices',
   'drinks',
-  'household',
   'frozen',
+  'household',
   'other',
   'staples',
 ];
@@ -466,13 +467,13 @@ export const AISLE_LABELS: Record<AisleCategory, string> = {
   'meat-seafood': 'Meat & fish',
   deli: 'Meat & fish',
   bakery: 'Bakery',
-  'dry-goods': 'Pasta, grains',
-  'cans-jars': 'Tins, sauces, spices',
-  'oils-sauces': 'Tins, sauces, spices',
-  'herbs-spices': 'Tins, sauces, spices',
+  'dry-goods': 'Pasta, grains, tins, sauces, spices',
+  'cans-jars': 'Pasta, grains, tins, sauces, spices',
+  'oils-sauces': 'Pasta, grains, tins, sauces, spices',
+  'herbs-spices': 'Pasta, grains, tins, sauces, spices',
   drinks: 'Snacks & drinks',
-  household: 'House & personal care',
   frozen: 'Frozen',
+  household: 'Other',
   other: 'Other',
   staples: 'Check you have',
 };
