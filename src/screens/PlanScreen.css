@@ -502,12 +502,14 @@
 
   /* Line the (disabled) build-list button up under the meal slots: clear the
      left nav + day-heading column, mirror the right nav, and stretch to the
-     slot width. Bottom inset keeps it clear of the fixed tab bar. */
+     slot width. Clearance from the fixed tab bar is already reserved by the
+     scroll container's padding-bottom (see AppShell), so this only needs a
+     small gap below the button — doubling it up is what left the dead space
+     under the week. */
   .plan__generate {
     display: block;
-    padding: var(--space-2) calc(32px + var(--space-1)) 0
+    padding: var(--space-2) calc(32px + var(--space-1)) var(--space-2)
       calc(32px + var(--space-1) + var(--space-1) + 34px + var(--space-2));
-    padding-bottom: calc(var(--bottom-bar-height) + env(safe-area-inset-bottom) + var(--space-2));
   }
 
   .plan__generate .btn {
