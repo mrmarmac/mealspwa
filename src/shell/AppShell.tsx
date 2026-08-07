@@ -29,6 +29,12 @@ export function AppShell() {
           minHeight: 0,
           overflowY: 'auto',
           overscrollBehavior: 'contain',
+          // Keep content (and each screen's sticky header) clear of the iOS
+          // status bar / notch — the app draws under it because of
+          // viewport-fit=cover + the translucent status-bar style. A sticky
+          // top:0 header inside a screen parks at this padding edge, so it
+          // sits just below the clock rather than under it.
+          paddingTop: 'env(safe-area-inset-top)',
           paddingBottom: 'calc(var(--bottom-bar-height) + env(safe-area-inset-bottom))',
         }}
       >
