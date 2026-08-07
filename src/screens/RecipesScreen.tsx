@@ -64,14 +64,6 @@ export default function RecipesScreen() {
           <div className="recipes__actions">
             <button
               type="button"
-              className="recipes__icon-btn tap-target"
-              onClick={() => navigate('/import')}
-              aria-label="Import recipes"
-            >
-              <Icon name="share" size={20} />
-            </button>
-            <button
-              type="button"
               className="recipes__icon-btn recipes__icon-btn--primary tap-target"
               onClick={() => navigate('/capture')}
               aria-label="Add a recipe"
@@ -133,15 +125,6 @@ export default function RecipesScreen() {
                   <span className="recipe-card__meta">
                     {count} ingredient{count === 1 ? '' : 's'}
                   </span>
-                  {r.tags.length > 0 && (
-                    <span className="recipe-card__tags">
-                      {r.tags.map((tag) => (
-                        <span key={tag} className="chip chip--neutral recipe-card__tag">
-                          {tag}
-                        </span>
-                      ))}
-                    </span>
-                  )}
                   {needsReview > 0 && (
                     <span className="chip chip--warning recipe-card__flag">
                       {needsReview} to check

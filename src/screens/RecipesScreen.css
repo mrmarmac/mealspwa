@@ -17,8 +17,8 @@
   border-bottom: 1px solid var(--color-border);
 }
 
-/* Search bar and the two action buttons share one row: the search grows to
-   fill, Import + Add sit to its right. */
+/* Search bar and the Add button share one row: the search grows to fill, Add
+   sits to its right. */
 .recipes__search-row {
   display: flex;
   align-items: center;
@@ -149,17 +149,6 @@
 .recipe-card__meta {
   font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
-}
-
-.recipe-card__tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-1);
-  margin-top: var(--space-1);
-}
-
-.recipe-card__tag {
-  text-transform: capitalize;
 }
 
 .recipe-card__flag {
