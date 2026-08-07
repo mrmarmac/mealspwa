@@ -68,8 +68,13 @@ export function AppShell() {
             style={({ isActive }) => ({
               flex: 1,
               flexDirection: 'column',
+              // Bottom-align the icon + label so they sit just above the
+              // home-indicator safe area rather than floating in the middle of
+              // the bar — that centred gap was the dead space below the tabs.
+              justifyContent: 'flex-end',
               gap: 2,
               height: 'var(--bottom-bar-height)',
+              paddingBottom: 'var(--space-1)',
               color: isActive ? 'var(--color-primary)' : 'var(--color-text-secondary)',
               fontSize: 'var(--font-size-xs)',
               fontWeight: isActive ? 700 : 500,
