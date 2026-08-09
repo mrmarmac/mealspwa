@@ -112,7 +112,6 @@ export default function RecipesScreen() {
       ) : (
         <ul className="recipes__grid">
           {results.map((r) => {
-            const count = r.ingredients.filter((l) => !l.isHeader).length;
             const needsReview = r.ingredients.filter((l) => !l.isHeader && l.confidence < 0.55).length;
             return (
               <li key={r.id}>
@@ -122,9 +121,6 @@ export default function RecipesScreen() {
                   onClick={() => navigate(`/recipes/${r.id}`, { state: { from: '/recipes' } })}
                 >
                   <span className="recipe-card__name">{r.name}</span>
-                  <span className="recipe-card__meta">
-                    {count} ingredient{count === 1 ? '' : 's'}
-                  </span>
                   {needsReview > 0 && (
                     <span className="chip chip--warning recipe-card__flag">
                       {needsReview} to check
