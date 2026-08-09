@@ -40,3 +40,18 @@ export function clampWeekStart(weekStart: ISODate, today: ISODate, weekStartsOn:
 export function retentionCutoff(today: ISODate, weekStartsOn: 0 | 1): ISODate {
   return planWeekBounds(today, weekStartsOn).min;
 }
+
+/**
+ * Whether an open shopping session was built from exactly this date window.
+ *
+ * The board asks this before it does anything to a list it did not build:
+ * clearing a week must spare a list belonging to another week, and generating
+ * for another week must ask first. `null` (no open list) is never a match.
+ */
+export function coversRange(
+  open: { fromDate: ISODate; toDate: ISODate } | null,
+  from: ISODate,
+  to: ISODate,
+): boolean {
+  return open !== null && open.fromDate === from && open.toDate === to;
+}

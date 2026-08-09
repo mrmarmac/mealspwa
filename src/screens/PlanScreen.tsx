@@ -22,7 +22,12 @@ import {
   type Recipe,
   type ShoppingSession,
 } from '@/domain/types';
-import { clampWeekStart, planWeekBounds, retentionCutoff } from '@/domain/planWindow';
+import {
+  clampWeekStart,
+  coversRange,
+  planWeekBounds,
+  retentionCutoff,
+} from '@/domain/planWindow';
 import { isEligibleLeftoverSlot } from './planSlots';
 import { useSpaceStore } from '@/store/useSpaceStore';
 import { useRecipeStore } from '@/store/useRecipeStore';
@@ -94,7 +99,9 @@ export default function PlanScreen() {
   const [picker, setPicker] = useState<SlotTarget | null>(null);
   const [query, setQuery] = useState('');
   const [leftoverFor, setLeftoverFor] = useState<Placement | null>(null);
-  const [confirmClear, setConfirmClear] = useState(false);
+  /** Open when clearing the week, holding the open shopping list (or `null` if
+   *  there is none) so the sheet can say exactly what the clear will touch. */
+  const [confirmClear, setConfirmClear] = useState<{ open: ShoppingSession | null } | null>(null);
   /** The open list, held while we ask whether to replace it with this week's. */
   const [confirmReplace, setConfirmReplace] = useState<ShoppingSession | null>(null);
   const [generating, setGenerating] = useState(false);
@@ -220,7 +227,7 @@ export default function PlanScreen() {
     // so the store's `session` is null on a cold start even when a list is
     // open, and the check below would silently never fire.
     const open = await peekActiveSession(space.id);
-    if (open && (open.fromDate !== weekStart || open.toDate !== rangeEnd)) {
+    if (open && !coversRange(open, weekStart, rangeEnd)) {
       setConfirmReplace(open);
       return;
     }
@@ -260,12 +267,34 @@ export default function PlanScreen() {
     toast.show({ message: 'Leftovers planned', variant: 'success' });
   };
 
+  // Plain functions, not useCallback: everything from here down sits below the
+  // `if (!space)` early return above, so a hook here would change the hook
+  // count between the loading render and the loaded one.
+
+  /** True when the open shopping list was built from the week on screen. */
+  const listCoversThisWeek = async (): Promise<boolean> =>
+    coversRange(await peekActiveSession(space.id), weekStart, rangeEnd);
+
+  const openClearConfirm = async () => {
+    setConfirmClear({ open: await peekActiveSession(space.id) });
+  };
+
   const handleClear = async () => {
-    setConfirmClear(false);
+    setConfirmClear(null);
+    // Re-checked rather than trusting the flag captured when the sheet opened:
+    // a peer could have built a list in between, and the wording is a
+    // prediction while this is the act.
+    const alsoList = await listCoversThisWeek();
     await clearRange(space.id, weekStart, rangeEnd);
-    await clearActiveSession(space.id);
+    // Only when the list came from THIS week. Clearing it unconditionally threw
+    // away a list built for a different week, which the user never asked to
+    // touch and cannot get back — the ticks are gone with it.
+    if (alsoList) await clearActiveSession(space.id);
     setGenerateName(pickGenerateName());
-    toast.show({ message: 'Week cleared', variant: 'success' });
+    toast.show({
+      message: alsoList ? 'Week and list cleared' : 'Week cleared',
+      variant: 'success',
+    });
   };
 
   return (
@@ -275,7 +304,7 @@ export default function PlanScreen() {
           <button
             type="button"
             className="plan__clear tap-target"
-            onClick={() => setConfirmClear(true)}
+            onClick={() => void openClearConfirm()}
             disabled={!hasPlacements}
             aria-label="Clear this week"
           >
@@ -582,9 +611,15 @@ export default function PlanScreen() {
       </BottomSheet>
 
       {/* Clear-week confirmation */}
-      <BottomSheet open={confirmClear} onClose={() => setConfirmClear(false)} hideClose>
+      <BottomSheet open={confirmClear !== null} onClose={() => setConfirmClear(null)} hideClose>
         <div className="plan__confirm">
-          <p>This resets the plan and the shopping list.</p>
+          <p>
+            {confirmClear === null || confirmClear.open === null
+              ? 'This resets the plan for this week.'
+              : coversRange(confirmClear.open, weekStart, rangeEnd)
+                ? 'This resets the plan for this week, and the shopping list built from it.'
+                : `This resets the plan for this week. Your shopping list is for ${formatRange(confirmClear.open.fromDate, confirmClear.open.toDate)}, so it stays as it is.`}
+          </p>
           <button
             type="button"
             className="btn btn--primary btn--block"
@@ -595,7 +630,7 @@ export default function PlanScreen() {
           <button
             type="button"
             className="btn btn--secondary btn--block"
-            onClick={() => setConfirmClear(false)}
+            onClick={() => setConfirmClear(null)}
           >
             Keep it
           </button>
