@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { clampWeekStart, planWeekBounds, retentionCutoff } from './planWindow';
+import { clampWeekStart, coversRange, planWeekBounds, retentionCutoff } from './planWindow';
 
 // Monday 2026-08-03 is a week start for weekStartsOn=1.
 const MONDAY = '2026-08-03';
@@ -42,5 +42,28 @@ describe('clampWeekStart', () => {
 describe('retentionCutoff', () => {
   it('equals the window minimum', () => {
     expect(retentionCutoff(MONDAY, 1)).toBe(planWeekBounds(MONDAY, 1).min);
+  });
+});
+
+describe('coversRange', () => {
+  const SUNDAY = '2026-08-09';
+  const open = { fromDate: MONDAY, toDate: SUNDAY };
+
+  it('matches the exact window the list was built from', () => {
+    expect(coversRange(open, MONDAY, SUNDAY)).toBe(true);
+  });
+
+  it('rejects a different week', () => {
+    expect(coversRange(open, '2026-08-10', '2026-08-16')).toBe(false);
+  });
+
+  it('rejects the same start with a different length', () => {
+    // A fortnight view starts on the same Monday but is not the same list.
+    expect(coversRange(open, MONDAY, '2026-08-16')).toBe(false);
+  });
+
+  it('treats no open list as no match', () => {
+    // Guards the clear-week path: with no list there is nothing to clear.
+    expect(coversRange(null, MONDAY, SUNDAY)).toBe(false);
   });
 });
