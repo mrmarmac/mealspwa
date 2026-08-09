@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { filterByTags } from './recipeFilter';
 import type { Recipe, RecipeTag } from './types';
 
-function makeRecipe(id: string, tags: string[]): Recipe {
+function makeRecipe(id: string, tags: string[], name: string = id): Recipe {
   return {
     id,
     kind: 'recipe',
@@ -12,7 +12,7 @@ function makeRecipe(id: string, tags: string[]): Recipe {
     lastWriterClientId: 'a',
     deletedAt: null,
     schemaVersion: 1,
-    name: id,
+    name,
     sourceUrl: null,
     sourceDomain: null,
     photo: null,
@@ -55,5 +55,22 @@ describe('filterByTags', () => {
   it('excludes recipes with no matching tag', () => {
     expect(filterByTags(all, ['easy'])).toEqual([]);
     expect(filterByTags([untagged], ['soup'])).toEqual([]);
+  });
+
+  it('matches an untagged recipe by its name', () => {
+    // Most libraries are barely tagged; without this the chip is a dead end.
+    const noodles = makeRecipe('noodles', [], 'Spicy soup noodles');
+    expect(filterByTags([noodles], ['soup'])).toEqual([noodles]);
+  });
+
+  it('ignores case and accents when matching the name', () => {
+    const upper = makeRecipe('upper', [], 'SOUP of the day');
+    const accented = makeRecipe('accented', [], 'Sôup à la crème');
+    expect(filterByTags([upper, accented], ['soup'])).toEqual([upper, accented]);
+  });
+
+  it('excludes a recipe matching neither the tag nor the name', () => {
+    const risotto = makeRecipe('risotto', ['bake'], 'Mushroom risotto');
+    expect(filterByTags([risotto], ['soup'])).toEqual([]);
   });
 });

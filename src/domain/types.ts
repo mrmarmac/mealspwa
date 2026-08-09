@@ -323,8 +323,21 @@ export interface ShoppingTick extends Syncable {
   ticked: boolean;
   tickedAt: ISODateTime | null;
 
-  /** Snapshot at tick time — powers "quantity grew since you ticked" and lets a
-   *  no-longer-needed row be shown struck through rather than vanishing. */
+  /**
+   * Struck off by hand for this shop. Optional, so rows written before this
+   * field existed read as not-removed with no migration.
+   *
+   * Session-scoped by construction — the tick id carries the session — so
+   * removing a standing manual item hides it for this shop only, and it comes
+   * back on the next one. Kept independent of `ticked`: an item can be both in
+   * the trolley and struck off the list, and clearing `ticked` here would
+   * throw away that fact and make undo lossy.
+   */
+  removed?: boolean;
+
+  /** Snapshot at tick time — powers "quantity grew since you ticked". Still
+   *  written and still synced, though nothing reads the display fields since
+   *  no-longer-needed rows started leaving the list outright. */
   quantityAtTick: number | null;
   unitAtTick: UnitCode | null;
   displayNameAtTick: string;
@@ -425,8 +438,6 @@ export interface ShoppingLine {
 export interface DerivedShoppingList {
   sessionId: Id;
   groups: { category: AisleCategory; lines: ShoppingLine[] }[];
-  /** Ticked but no longer required — shown struck through, never silently gone. */
-  orphans: ShoppingLine[];
   counts: { total: number; ticked: number; needsReview: number };
 }
 

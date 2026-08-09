@@ -15,7 +15,13 @@ import {
   todayISO,
   type ISODate,
 } from '@/domain/primitives';
-import { makeSlotId, type MealType, type Placement, type Recipe } from '@/domain/types';
+import {
+  makeSlotId,
+  type MealType,
+  type Placement,
+  type Recipe,
+  type ShoppingSession,
+} from '@/domain/types';
 import { clampWeekStart, planWeekBounds, retentionCutoff } from '@/domain/planWindow';
 import { isEligibleLeftoverSlot } from './planSlots';
 import { useSpaceStore } from '@/store/useSpaceStore';
@@ -30,6 +36,12 @@ import { useToast } from '@/shell/Toast';
 import './PlanScreen.css';
 
 const MULTIPLIERS = [0.5, 1, 2, 3];
+
+/** "3 – 9 Aug", for naming which week a list belongs to. */
+function formatRange(from: ISODate, to: ISODate): string {
+  const opts = { month: 'short', day: 'numeric' } as const;
+  return `${fromISODate(from).toLocaleDateString(undefined, opts)} – ${fromISODate(to).toLocaleDateString(undefined, opts)}`;
+}
 
 /** Playful rotating labels for the build-list action — a fresh one each time
  *  the screen mounts or the week is cleared. */
@@ -74,6 +86,7 @@ export default function PlanScreen() {
   const clearRange = usePlanStore((s) => s.clearRange);
   const pruneBefore = usePlanStore((s) => s.pruneBefore);
   const startSession = useShoppingStore((s) => s.startSession);
+  const peekActiveSession = useShoppingStore((s) => s.peekActiveSession);
   const clearActiveSession = useShoppingStore((s) => s.clearActiveSession);
 
   const [rangeDays, setRangeDays] = useState<7 | 14>(7);
@@ -82,6 +95,8 @@ export default function PlanScreen() {
   const [query, setQuery] = useState('');
   const [leftoverFor, setLeftoverFor] = useState<Placement | null>(null);
   const [confirmClear, setConfirmClear] = useState(false);
+  /** The open list, held while we ask whether to replace it with this week's. */
+  const [confirmReplace, setConfirmReplace] = useState<ShoppingSession | null>(null);
   const [generating, setGenerating] = useState(false);
   const [generateName, setGenerateName] = useState(pickGenerateName);
   // Days whose Dinner slot should show an extra empty slot, revealed via the
@@ -179,21 +194,40 @@ export default function PlanScreen() {
     [space, picker, place, bySlot],
   );
 
+  const buildList = useCallback(
+    async (replace: boolean) => {
+      if (!space) return;
+      setConfirmReplace(null);
+      setGenerating(true);
+      try {
+        await startSession(space.id, weekStart, rangeEnd, replace ? { replace: true } : undefined);
+        navigate('/shop');
+      } catch (err) {
+        toast.show({
+          message: err instanceof Error ? err.message : 'Could not build the list',
+          variant: 'error',
+        });
+      } finally {
+        setGenerating(false);
+      }
+    },
+    [space, weekStart, rangeEnd, startSession, navigate, toast],
+  );
+
   const handleGenerate = useCallback(async () => {
     if (!space) return;
-    setGenerating(true);
-    try {
-      await startSession(space.id, weekStart, rangeEnd);
-      navigate('/shop');
-    } catch (err) {
-      toast.show({
-        message: err instanceof Error ? err.message : 'Could not build the list',
-        variant: 'error',
-      });
-    } finally {
-      setGenerating(false);
+    // Read straight from the database: this screen never calls `loadActive`,
+    // so the store's `session` is null on a cold start even when a list is
+    // open, and the check below would silently never fire.
+    const open = await peekActiveSession(space.id);
+    if (open && (open.fromDate !== weekStart || open.toDate !== rangeEnd)) {
+      setConfirmReplace(open);
+      return;
     }
-  }, [space, weekStart, rangeEnd, startSession, navigate, toast]);
+    // Same week (or no list yet): never `replace`, so rebuilding after a plan
+    // edit keeps every tick the user has already made.
+    await buildList(false);
+  }, [space, weekStart, rangeEnd, peekActiveSession, buildList]);
 
   const today = todayISO();
 
@@ -517,6 +551,34 @@ export default function PlanScreen() {
             </ul>
           )}
         </div>
+      </BottomSheet>
+
+      {/* Replace-the-open-list confirmation. Only ever shown when the open list
+          is for a different week — rebuilding the same week just reuses it. */}
+      <BottomSheet open={confirmReplace !== null} onClose={() => setConfirmReplace(null)} hideClose>
+        {confirmReplace && (
+          <div className="plan__confirm">
+            <p>
+              A shopping list is already open for {formatRange(confirmReplace.fromDate, confirmReplace.toDate)}.
+              Building one for {formatRange(weekStart, rangeEnd)} replaces it, and anything
+              ticked on the open list is lost.
+            </p>
+            <button
+              type="button"
+              className="btn btn--primary btn--block"
+              onClick={() => void buildList(true)}
+            >
+              Replace the list
+            </button>
+            <button
+              type="button"
+              className="btn btn--secondary btn--block"
+              onClick={() => setConfirmReplace(null)}
+            >
+              Keep it
+            </button>
+          </div>
+        )}
       </BottomSheet>
 
       {/* Clear-week confirmation */}

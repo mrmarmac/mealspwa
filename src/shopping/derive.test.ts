@@ -25,9 +25,9 @@ const TUE = '2026-08-04';
 const THU = '2026-08-06';
 const SUN = '2026-08-09';
 
-/** Every line across every group, plus orphans — order-independent lookups. */
+/** Every line across every group — order-independent lookups. */
 function allLines(list: DerivedShoppingList): ShoppingLine[] {
-  return [...list.groups.flatMap((g) => g.lines), ...list.orphans];
+  return list.groups.flatMap((g) => g.lines);
 }
 
 function lineFor(list: DerivedShoppingList, itemKey: string): ShoppingLine | undefined {
@@ -277,14 +277,12 @@ describe('ticks survive the plan changing underneath them', () => {
     expect(pasta.reopened).toBe(false);
   });
 
-  it('shows a ticked item that is no longer needed as an orphan instead of dropping it', () => {
-    // The meal that needed pasta is gone, but it is already in the trolley.
+  it('drops a ticked item once the meal that needed it leaves the plan', () => {
+    // Ticked or not, the plan no longer justifies it, so it leaves the list.
     const list = deriveShoppingList({ ...base(), placements: [] });
 
-    expect(list.groups.flatMap((g) => g.lines).find((l) => l.lineKey === 'pasta')).toBeUndefined();
-    const orphan = list.orphans.find((l) => l.lineKey === 'pasta');
-    expect(orphan).toBeDefined();
-    expect(orphan!.ticked).toBe(true);
+    expect(lineFor(list, 'pasta')).toBeUndefined();
+    expect(list.counts.total).toBe(0);
   });
 
   it('keeps ticks across a swap of the meal that produced them', () => {
@@ -297,6 +295,48 @@ describe('ticks survive the plan changing underneath them', () => {
 
     // Different recipe, different day, same ingredient -> same lineKey, tick holds.
     expect(lineFor(list, 'pasta')!.ticked).toBe(true);
+  });
+});
+
+describe('lines struck off by hand', () => {
+  const r = recipe('r-1', 'Pasta', '300g pasta\n1 onion');
+  const base = () =>
+    input({
+      recipes: [r],
+      placements: [place('p1', r, TUE, 'dinner')],
+      session: session('sess-1', MON, SUN),
+    });
+
+  it('hides a line the user struck off', () => {
+    const list = deriveShoppingList({
+      ...base(),
+      ticks: [tick('sess-1', 'pasta', false, { removed: true })],
+    });
+
+    expect(lineFor(list, 'pasta')).toBeUndefined();
+    expect(lineFor(list, 'onion')).toBeDefined();
+  });
+
+  it('keeps a struck-off line out even when it is ticked, and out of the counts', () => {
+    // Removal and "already in the trolley" are independent facts, so a row can
+    // be both. If `removed` didn't win here the list could never read as done.
+    const list = deriveShoppingList({
+      ...base(),
+      ticks: [tick('sess-1', 'pasta', true, { removed: true })],
+    });
+
+    expect(lineFor(list, 'pasta')).toBeUndefined();
+    expect(list.counts.ticked).toBe(0);
+    expect(list.counts.total).toBe(1);
+  });
+
+  it('ignores a removal belonging to a different session', () => {
+    const list = deriveShoppingList({
+      ...base(),
+      ticks: [tick('sess-2', 'pasta', false, { removed: true })],
+    });
+
+    expect(lineFor(list, 'pasta')).toBeDefined();
   });
 });
 

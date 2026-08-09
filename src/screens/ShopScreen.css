@@ -17,11 +17,29 @@
   border-bottom: 1px solid var(--color-border);
 }
 
+/* Centred, not baseline-aligned: the row now carries an icon button, and an
+   icon sitting on the baseline of an xxl heading reads as dropped. */
 .shop__title-row {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
+}
+
+/* Mirrors .plan__clear, so the destructive action sits in the same place on
+   both screens. */
+.shop__clear {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  background: transparent;
+  color: var(--color-text-secondary);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
 }
 
 .shop__title {
@@ -173,11 +191,18 @@
   text-decoration: line-through;
 }
 
-.shop__row--orphan {
-  padding: var(--space-3);
-  justify-content: space-between;
+/* --- clear confirmation --------------------------------------------------- */
+
+.shop__confirm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.shop__confirm p {
+  margin: 0;
   color: var(--color-text-secondary);
-  text-decoration: line-through;
+  font-size: var(--font-size-sm);
 }
 
 .shop__row-flags {
@@ -298,6 +323,16 @@
   margin-top: 2px;
   font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
+}
+
+/* There is no btn--danger in global.css, and one button does not justify
+   inventing one — the danger token carries the meaning on its own. */
+.provenance__remove {
+  margin-top: var(--space-3);
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-danger);
 }
 
 /* --- pack size prompt ----------------------------------------------------- */

@@ -9,7 +9,7 @@
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { addDays, todayISO, fromISODate } from '@/domain/primitives';
+import { fromISODate } from '@/domain/primitives';
 import {
   AISLE_LABELS,
   type ContainerUnit,
@@ -46,15 +46,18 @@ export default function ShopScreen() {
   const list = useShoppingStore((s) => s.derivedList);
   const loading = useShoppingStore((s) => s.loading);
   const loadActive = useShoppingStore((s) => s.loadActive);
-  const startSession = useShoppingStore((s) => s.startSession);
+  const clearActiveSession = useShoppingStore((s) => s.clearActiveSession);
   const toggleTick = useShoppingStore((s) => s.toggleTick);
   const addManualItem = useShoppingStore((s) => s.addManualItem);
+  const removeLine = useShoppingStore((s) => s.removeLine);
+  const restoreLine = useShoppingStore((s) => s.restoreLine);
   const setPackSize = useShoppingStore((s) => s.setPackSize);
 
   const [detail, setDetail] = useState<ShoppingLine | null>(null);
   const [packPrompt, setPackPrompt] = useState<ShoppingLine | null>(null);
   const [manualText, setManualText] = useState('');
   const [showStaples, setShowStaples] = useState(false);
+  const [confirmClear, setConfirmClear] = useState(false);
 
   useEffect(() => {
     void initSpace();
@@ -64,11 +67,33 @@ export default function ShopScreen() {
     if (space) void loadActive(space.id);
   }, [space, loadActive]);
 
-  const handleStart = useCallback(async () => {
+  const handleClear = useCallback(async () => {
     if (!space) return;
-    const from = todayISO();
-    await startSession(space.id, from, addDays(from, space.settings.defaultPlanRange - 1));
-  }, [space, startSession]);
+    setConfirmClear(false);
+    await clearActiveSession(space.id);
+    toast.show({ message: 'List cleared', variant: 'success' });
+  }, [space, clearActiveSession, toast]);
+
+  /** No confirmation here: the button already sits two taps deep behind the
+   *  row's chevron, and the undo toast is a better safety net than a sheet. */
+  const handleRemove = useCallback(
+    async (line: ShoppingLine) => {
+      // Closed before the await, because `detail` is a snapshot of the line —
+      // once the list recomputes, the sheet would be describing a row that no
+      // longer exists. Same reason `handlePackSize` clears its prompt first.
+      setDetail(null);
+      await removeLine(line.lineKey);
+      toast.show({
+        message: `Removed ${line.displayName}`,
+        action: { label: 'Undo', onClick: () => void restoreLine(line.lineKey) },
+        // A toast carrying an action stays put by default. That is right for
+        // the update prompt, wrong for this one — it would sit over the list
+        // for the rest of the shop.
+        duration: 6000,
+      });
+    },
+    [removeLine, restoreLine, toast],
+  );
 
   const handleAddManual = useCallback(async () => {
     const text = manualText.trim();
@@ -129,13 +154,12 @@ export default function ShopScreen() {
         <EmptyState
           icon="basket"
           title="No list yet"
-          description="Plan meals, then make a list."
+          description="Plan your meals, then build the list from the plan board."
           action={
             <div className="shop__empty-actions">
-              <button type="button" className="btn btn--primary" onClick={() => void handleStart()}>
-                Build list from this week
-              </button>
-              <button type="button" className="btn btn--secondary" onClick={() => navigate('/plan')}>
+              {/* The list is always built from the week you are looking at on
+                  the plan board, so that is the only place it can start. */}
+              <button type="button" className="btn btn--primary" onClick={() => navigate('/plan')}>
                 Go to plan
               </button>
               {/* Settings has no tab of its own; this is its entry point, and it
@@ -166,6 +190,16 @@ export default function ShopScreen() {
           <span className="shop__count">
             {remaining === 0 ? 'All done' : `${remaining} left`}
           </span>
+          {/* Clears the list only. The week's plan is untouched, so the same
+              list can be rebuilt from the plan board. */}
+          <button
+            type="button"
+            className="shop__clear tap-target"
+            onClick={() => setConfirmClear(true)}
+            aria-label="Clear this list"
+          >
+            <Icon name="trash" size={20} />
+          </button>
         </div>
         <p className="shop__range">
           {fromISODate(session.fromDate).toLocaleDateString(undefined, {
@@ -228,22 +262,6 @@ export default function ShopScreen() {
         </section>
       )}
 
-      {/* A ticked item that is no longer needed is struck through, never removed
-          from under the user — it may already be in the trolley. */}
-      {list.orphans.length > 0 && (
-        <section className="shop__group">
-          <h2 className="shop__group-title">No longer needed</h2>
-          <ul className="shop__lines">
-            {list.orphans.map((line) => (
-              <li key={line.lineKey} className="shop__row shop__row--orphan">
-                <span className="shop__row-name">{line.displayName}</span>
-                <span className="shop__row-qty">{line.displayQuantity}</span>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-
       <div className="shop__add">
         <input
           type="text"
@@ -300,22 +318,63 @@ export default function ShopScreen() {
                   <div className="provenance__raw">{c.rawText}</div>
                   <div className="provenance__meta">
                     {c.recipeName}
-                    {' · '}
-                    {fromISODate(c.date).toLocaleDateString(undefined, {
-                      weekday: 'short',
-                      day: 'numeric',
-                      month: 'short',
-                    })}
-                    {' '}
-                    {c.mealType}
+                    {/* A hand-added item has no meal behind it. The date and
+                        mealType it carries are placeholders invented by
+                        `collectComponents` to satisfy the non-null fields, so
+                        printing them would attach it to a slot it never had. */}
+                    {c.source !== 'manual' && (
+                      <>
+                        {' · '}
+                        {fromISODate(c.date).toLocaleDateString(undefined, {
+                          weekday: 'short',
+                          day: 'numeric',
+                          month: 'short',
+                        })}
+                        {' '}
+                        {c.mealType}
+                      </>
+                    )}
                     {c.scale === 0 && ' · leftovers, adds nothing'}
                     {c.scale !== 0 && c.scale !== 1 && ` · ×${c.scale}`}
                   </div>
                 </li>
               ))}
             </ul>
+            <button
+              type="button"
+              className="provenance__remove tap-target"
+              onClick={() => void handleRemove(detail)}
+            >
+              <Icon name="trash" size={18} />
+              Remove from list
+            </button>
           </div>
         )}
+      </BottomSheet>
+
+      {/* Clearing the list leaves the plan alone, so it can be rebuilt. */}
+      <BottomSheet open={confirmClear} onClose={() => setConfirmClear(false)} hideClose>
+        <div className="shop__confirm">
+          <p>
+            This clears the shopping list, including everything you have ticked. Your
+            meal plan stays as it is, so you can build the list again from the plan
+            board.
+          </p>
+          <button
+            type="button"
+            className="btn btn--primary btn--block"
+            onClick={() => void handleClear()}
+          >
+            Clear list
+          </button>
+          <button
+            type="button"
+            className="btn btn--secondary btn--block"
+            onClick={() => setConfirmClear(false)}
+          >
+            Keep it
+          </button>
+        </div>
       </BottomSheet>
 
       {/* Teaching the app a pack size makes every future list better. */}
@@ -394,7 +453,7 @@ function ShopRow({ line, onToggle, onDetail, onFixPack }: ShopRowProps) {
           type="button"
           className="shop__info tap-target"
           onClick={onDetail}
-          aria-label={`Where ${line.displayName} came from`}
+          aria-label={`More for ${line.displayName}`}
         >
           <Icon name="chevron" size={16} rotate={270} />
         </button>

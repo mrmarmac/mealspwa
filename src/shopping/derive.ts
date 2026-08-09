@@ -6,8 +6,9 @@
  * The reconciliation step is the one that earns the user's trust. The plan can
  * change while they are standing in the shop; when it does, every tick they
  * already made survives, a row that grew is RE-OPENED rather than quietly
- * rewritten, and a row that is no longer needed is shown struck through in
- * `orphans` instead of vanishing and leaving them wondering.
+ * rewritten, and a row whose last recipe left the plan leaves the list with
+ * it. A tick outlives the row, so if that recipe comes back this session the
+ * line returns already ticked.
  */
 import type { Id, ISODate } from '@/domain/primitives';
 import { isLive } from '@/domain/sync';
@@ -78,27 +79,21 @@ export function deriveShoppingList(input: DeriveInput): DerivedShoppingList {
   }
 
   const startKeys = input.keysAtStart ? new Set(input.keysAtStart) : null;
-  const lines: ShoppingLine[] = merged.map((line) => {
-    const tick = tickByKey.get(line.lineKey);
-    const ticked = tick?.ticked ?? false;
-    const reopened = tick ? materiallyIncreased(tick, line, input.settings.dialect) : false;
-    return {
-      ...line,
-      ticked,
-      reopened,
-      addedSinceStart: startKeys !== null && !startKeys.has(line.lineKey),
-    };
-  });
-
-  // ---- orphans -----------------------------------------------------------
-  const present = new Set(lines.map((l) => l.lineKey));
-  const orphans: ShoppingLine[] = [];
-  for (const t of tickByKey.values()) {
-    if (!t.ticked) continue;
-    if (present.has(t.lineKey)) continue;
-    orphans.push(orphanLine(t, metaByKey.get(t.lineKey) ?? null));
-  }
-  orphans.sort((a, b) => a.lineKey.localeCompare(b.lineKey));
+  const lines: ShoppingLine[] = merged
+    // Struck off by hand for this shop. Dropped before the counts are taken so
+    // a removed row cannot sit in `total` and stop the list ever reading done.
+    .filter((line) => tickByKey.get(line.lineKey)?.removed !== true)
+    .map((line) => {
+      const tick = tickByKey.get(line.lineKey);
+      const ticked = tick?.ticked ?? false;
+      const reopened = tick ? materiallyIncreased(tick, line, input.settings.dialect) : false;
+      return {
+        ...line,
+        ticked,
+        reopened,
+        addedSinceStart: startKeys !== null && !startKeys.has(line.lineKey),
+      };
+    });
 
   // ---- group by aisle ----------------------------------------------------
   const order = input.settings.aisleOrder;
@@ -125,37 +120,10 @@ export function deriveShoppingList(input: DeriveInput): DerivedShoppingList {
   return {
     sessionId,
     groups,
-    orphans,
     counts: {
       total: lines.length,
       ticked: lines.filter((l) => l.ticked).length,
       needsReview: lines.filter((l) => l.needsReview).length,
     },
-  };
-}
-
-/**
- * A ticked row whose plan justification has gone. It is rendered struck
- * through from the snapshot taken at tick time — the user bought it, and
- * pretending otherwise would be a lie about what is in their trolley.
- */
-function orphanLine(tick: ShoppingTick, meta: ItemMeta | null): ShoppingLine {
-  return {
-    lineKey: tick.lineKey,
-    displayName: tick.displayNameAtTick,
-    category: meta?.category ?? 'other',
-    totals: [],
-    displayQuantity: tick.displayQuantityAtTick,
-    components: [],
-    confidence: 1,
-    needsReview: false,
-    hasAssumption: false,
-    isToTaste: false,
-    isPantryStaple: meta?.pantryStaple ?? false,
-    isOptional: false,
-    manual: false,
-    ticked: true,
-    reopened: false,
-    addedSinceStart: false,
   };
 }
