@@ -7,6 +7,7 @@ import { create } from 'zustand';
 import { applyOverrides, parseIngredientBlock, PARSER_VERSION } from '@/parser';
 import { backfillRecipeTags, getRecipesBySpace, recipeRepo, reparseStaleRecipes } from '@/db/repo';
 import { uuidv7, type Id } from '@/domain/primitives';
+import { normalizeText } from '@/domain/recipeFilter';
 import {
   SCHEMA_VERSION,
   type IngredientOverride,
@@ -14,12 +15,6 @@ import {
   type PhotoRef,
   type Recipe,
 } from '@/domain/types';
-
-const COMBINING_MARKS_RE = /[\u0300-\u036f]/g;
-
-function normalize(s: string): string {
-  return s.normalize('NFKD').replace(COMBINING_MARKS_RE, '').trim().toLowerCase();
-}
 
 function deriveSourceDomain(url: string | null): string | null {
   if (!url) return null;
@@ -44,9 +39,9 @@ function errorMessage(err: unknown): string {
 }
 
 function matchesQuery(recipe: Recipe, normalizedQuery: string): boolean {
-  if (normalize(recipe.name).includes(normalizedQuery)) return true;
-  if (recipe.tags.some((tag) => normalize(tag).includes(normalizedQuery))) return true;
-  if (recipe.ingredients.some((line) => normalize(line.itemKey).includes(normalizedQuery))) {
+  if (normalizeText(recipe.name).includes(normalizedQuery)) return true;
+  if (recipe.tags.some((tag) => normalizeText(tag).includes(normalizedQuery))) return true;
+  if (recipe.ingredients.some((line) => normalizeText(line.itemKey).includes(normalizedQuery))) {
     return true;
   }
   return false;
@@ -134,7 +129,7 @@ export const useRecipeStore = create<RecipeStoreState>((set, get) => ({
   },
 
   search(query) {
-    const q = normalize(query);
+    const q = normalizeText(query);
     const recipes = get().recipes;
     if (q === '') return recipes;
     return recipes.filter((r) => matchesQuery(r, q));

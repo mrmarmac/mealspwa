@@ -99,7 +99,13 @@ export function migrateTicks(
       id: targetId,
       lineKey: newKey,
       deletedAt: null,
+      // Both flags OR together so the merge is deterministic whichever row
+      // arrives first. Note the two biases differ: OR-ing `ticked` errs
+      // towards "already in the trolley", OR-ing `removed` errs towards
+      // hidden. Consistency is worth more here than picking a safer default
+      // for one of them.
       ticked: t.ticked || (existingTarget?.ticked ?? false),
+      removed: (t.removed ?? false) || (existingTarget?.removed ?? false),
     };
     out.push(stamp(merged, ctx));
   }

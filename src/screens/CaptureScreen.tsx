@@ -167,26 +167,13 @@ export default function CaptureScreen() {
         <h1 className="capture__title">{editId ? 'Edit recipe' : 'Add recipe'}</h1>
       </header>
 
-      {/* Delete lives only in the editor, front and centre, so it's a
-          deliberate act — not a stray tap while viewing a recipe. */}
-      {editId && (
-        <button
-          type="button"
-          className="capture__delete tap-target"
-          onClick={() => setConfirmDelete(true)}
-        >
-          <Icon name="trash" size={18} />
-          Delete recipe
-        </button>
-      )}
-
       <label className="capture__field">
         <span className="capture__label">Name</span>
         <input
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="Creamy butter beans"
+          placeholder="e.g. red roasted radishes"
           autoComplete="off"
         />
       </label>
@@ -292,6 +279,20 @@ export default function CaptureScreen() {
           rows={6}
         />
       </label>
+
+      {/* Delete lives only in the editor, at the end of the form and clear of
+          the Save button, so it's a deliberate act — not a stray tap while
+          viewing a recipe. */}
+      {editId && (
+        <button
+          type="button"
+          className="capture__delete tap-target"
+          onClick={() => setConfirmDelete(true)}
+        >
+          <Icon name="trash" size={18} />
+          Delete recipe
+        </button>
+      )}
 
       <div className="sticky-cta">
         <button
