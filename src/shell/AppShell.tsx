@@ -58,11 +58,14 @@ export function AppShell() {
           // space in the installed PWA.)
           background: 'var(--color-surface)',
           borderTop: '1px solid var(--color-border)',
-          // The safe-area allowance is folded into each tab's height/padding
-          // below rather than added as empty padding here. Adding it here
-          // parked the labels at the top of the bar and left the whole
-          // home-indicator band beneath them blank — visible dead space on
-          // devices with a large bottom inset.
+          // Reserve the home-indicator inset as padding on the bar itself. The
+          // background (and top border) fill down through the inset to the
+          // physical bottom edge, while this padding keeps the tappable tab row
+          // — the icons and labels — above the indicator instead of colliding
+          // with it. box-sizing keeps the bar's total height at the tab-row
+          // height plus the inset.
+          boxSizing: 'border-box',
+          paddingBottom: 'env(safe-area-inset-bottom, 0px)',
         }}
       >
         {TABS.map((tab) => (
@@ -73,15 +76,12 @@ export function AppShell() {
             style={({ isActive }) => ({
               flex: 1,
               flexDirection: 'column',
-              // The tap target spans the full bar zone (base height + the
-              // bottom safe-area inset), and the icon + label are bottom-
-              // aligned within it. This drops them down into the home-indicator
-              // band — filling what was empty space — while keeping a small
-              // clearance above the physical bottom edge.
-              justifyContent: 'flex-end',
+              // Tab row sits above the inset (reserved by the nav's
+              // padding-bottom). Icon + label are centered within the base
+              // bar height.
+              justifyContent: 'center',
               gap: 2,
-              height: 'calc(var(--bottom-bar-height) + env(safe-area-inset-bottom))',
-              paddingBottom: 'calc(var(--space-2) + env(safe-area-inset-bottom) * 0.35)',
+              height: 'var(--bottom-bar-height)',
               color: isActive ? 'var(--color-primary)' : 'var(--color-text-secondary)',
               fontSize: 'var(--font-size-xs)',
               fontWeight: isActive ? 700 : 500,
