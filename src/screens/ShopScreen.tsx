@@ -186,9 +186,21 @@ export default function ShopScreen() {
     <div className="shop">
       <header className="shop__header">
         <div className="shop__title-row">
-          <h1 className="shop__title">Shop</h1>
+          {/* The week's date range now stands in for the old "Shop" title —
+              it is the one thing worth reading at the top of this screen. */}
+          <h1 className="shop__range-title">
+            {fromISODate(session.fromDate).toLocaleDateString(undefined, {
+              day: 'numeric',
+              month: 'short',
+            })}
+            {' – '}
+            {fromISODate(session.toDate).toLocaleDateString(undefined, {
+              day: 'numeric',
+              month: 'short',
+            })}
+          </h1>
           <span className="shop__count">
-            {remaining === 0 ? 'All done' : `${remaining} left`}
+            {remaining === 0 ? 'All done' : `${remaining} items to buy`}
           </span>
           {/* Clears the list only. The week's plan is untouched, so the same
               list can be rebuilt from the plan board. */}
@@ -201,20 +213,11 @@ export default function ShopScreen() {
             <Icon name="trash" size={20} />
           </button>
         </div>
-        <p className="shop__range">
-          {fromISODate(session.fromDate).toLocaleDateString(undefined, {
-            day: 'numeric',
-            month: 'short',
-          })}
-          {' – '}
-          {fromISODate(session.toDate).toLocaleDateString(undefined, {
-            day: 'numeric',
-            month: 'short',
-          })}
-          {list.counts.needsReview > 0 && (
-            <> · <span className="shop__review-count">{list.counts.needsReview} to check</span></>
-          )}
-        </p>
+        {list.counts.needsReview > 0 && (
+          <p className="shop__range">
+            <span className="shop__review-count">{list.counts.needsReview} to check</span>
+          </p>
+        )}
       </header>
 
       {aisles.map((group) => (

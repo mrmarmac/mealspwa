@@ -5,7 +5,7 @@
  */
 import { useEffect, useMemo } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { RECIPE_TAGS, type ParsedIngredientLine, type RecipeTag } from '@/domain/types';
+import { RECIPE_TAGS, type ParsedIngredientLine } from '@/domain/types';
 import { useSpaceStore } from '@/store/useSpaceStore';
 import { useRecipeStore } from '@/store/useRecipeStore';
 import { Icon } from '@/shell/Icon';
@@ -43,7 +43,6 @@ export default function RecipeDetailScreen() {
   const recipes = useRecipeStore((s) => s.recipes);
   const loaded = useRecipeStore((s) => s.loaded);
   const load = useRecipeStore((s) => s.load);
-  const setTags = useRecipeStore((s) => s.setTags);
 
   useEffect(() => {
     void initSpace();
@@ -55,29 +54,13 @@ export default function RecipeDetailScreen() {
 
   const recipe = useMemo(() => recipes.find((r) => r.id === id), [recipes, id]);
   const sections = useMemo(() => (recipe ? groupBySection(recipe.ingredients) : []), [recipe]);
-  // Only the known vocabulary is toggleable; any legacy free-form tag is
-  // ignored here rather than shown as an un-editable chip.
-  const activeTags = useMemo(
-    () =>
-      new Set(
-        (recipe?.tags ?? []).filter((t): t is RecipeTag =>
-          (RECIPE_TAGS as readonly string[]).includes(t),
-        ),
-      ),
+  // Read-only here: show only the tags actually assigned, in the vocabulary's
+  // own order, and ignore any legacy free-form tag. Changing tags is done in
+  // the editor (Capture screen), reached via the edit button in the header.
+  const tags = useMemo(
+    () => RECIPE_TAGS.filter((t) => (recipe?.tags ?? []).includes(t)),
     [recipe],
   );
-
-  const toggleTag = (tag: RecipeTag) => {
-    if (!recipe) return;
-    const next = new Set(activeTags);
-    if (next.has(tag)) next.delete(tag);
-    else next.add(tag);
-    // Persist in the vocabulary's own order so tags read consistently.
-    void setTags(
-      recipe.id,
-      RECIPE_TAGS.filter((t) => next.has(t)),
-    );
-  };
 
   if (!space || !loaded) {
     return (
@@ -129,25 +112,17 @@ export default function RecipeDetailScreen() {
         </a>
       )}
 
-      {/* Tags are viewed and changed right here — no need to open the editor.
-          Every tag in the vocabulary shows as a toggle; active ones are
-          filled. */}
-      <div className="detail__tags" role="group" aria-label="Recipe tags">
-        {RECIPE_TAGS.map((tag) => {
-          const active = activeTags.has(tag);
-          return (
-            <button
-              key={tag}
-              type="button"
-              className={`detail__tag ${active ? 'is-active' : ''}`}
-              onClick={() => toggleTag(tag)}
-              aria-pressed={active}
-            >
+      {/* Read-only: only the tags assigned to this recipe are shown. To change
+          them, open the editor with the edit button in the header above. */}
+      {tags.length > 0 && (
+        <ul className="detail__tags" aria-label="Recipe tags">
+          {tags.map((tag) => (
+            <li key={tag} className="detail__tag">
               {tag}
-            </button>
-          );
-        })}
-      </div>
+            </li>
+          ))}
+        </ul>
+      )}
 
       <section className="detail__section">
         <h2 className="detail__section-title">Ingredients</h2>

@@ -67,7 +67,8 @@ test('capture a recipe, plan it, build and tick the shopping list', async ({ pag
 
   // --- Shop ----------------------------------------------------------------
   await expect(page).toHaveURL(/#\/shop$/);
-  await expect(page.getByRole('heading', { name: 'Shop', level: 1 })).toBeVisible();
+  // The screen's h1 is now the week's date range, not a static "Shop" title.
+  await expect(page.locator('.shop__range-title')).toBeVisible();
 
   // The list was derived from our recipe, so there is at least one tickable row.
   const firstTick = page.getByRole('button', { name: /^Tick / }).first();
@@ -78,7 +79,7 @@ test('capture a recipe, plan it, build and tick the shopping list', async ({ pag
   const label = (await firstTick.getAttribute('aria-label')) ?? '';
   const item = label.replace(/^Tick /, '');
 
-  // Ticking flips the row's pressed state and decrements the "N left" counter.
+  // Ticking flips the row's pressed state and decrements the "N items to buy" counter.
   const countBefore = await readRemaining(page);
   await firstTick.click();
   await expect(page.getByRole('button', { name: `Untick ${item}` })).toBeVisible();
@@ -88,10 +89,10 @@ test('capture a recipe, plan it, build and tick the shopping list', async ({ pag
     .toBe(countBefore === null ? countBefore : countBefore - 1);
 });
 
-/** Reads the header "N left" counter (or 0 when it shows "All done"). */
+/** Reads the header "N items to buy" counter (or 0 when it shows "All done"). */
 async function readRemaining(page: import('@playwright/test').Page): Promise<number | null> {
   const text = (await page.locator('.shop__count').textContent())?.trim() ?? '';
   if (/all done/i.test(text)) return 0;
-  const match = text.match(/(\d+)\s*left/i);
+  const match = text.match(/(\d+)\s*items? to buy/i);
   return match ? Number(match[1]) : null;
 }
