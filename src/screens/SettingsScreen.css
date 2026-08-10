@@ -141,6 +141,38 @@
   user-select: all;
 }
 
+/* QR code shown on the sharing device, centred with a little breathing room
+   above the copyable-code fallback. */
+.settings__qr {
+  display: flex;
+  justify-content: center;
+  margin: 0 0 var(--space-3);
+}
+
+/* The copy-the-code fallback is tucked behind a disclosure so the QR is the
+   obvious primary path. */
+.settings__code-details {
+  margin: 0 0 var(--space-3);
+}
+
+.settings__code-details > summary {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  padding: var(--space-1) 0;
+}
+
+.settings__code-details[open] > summary {
+  margin-bottom: var(--space-2);
+}
+
+.settings__scan-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+}
+
 .settings__join {
   display: flex;
   flex-direction: column;

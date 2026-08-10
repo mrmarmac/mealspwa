@@ -13,6 +13,8 @@ import { useSyncStore } from '@/store/useSyncStore';
 import { downloadSpaceFile, exportSpace, importSpaceFile, readSpaceFile } from '@/sync/spaceFile';
 import { Icon } from '@/shell/Icon';
 import { Spinner } from '@/shell/Spinner';
+import { QrCode } from '@/shell/QrCode';
+import { QrScanner } from '@/shell/QrScanner';
 import { useToast } from '@/shell/Toast';
 import './SettingsScreen.css';
 
@@ -45,6 +47,7 @@ function SyncSection({ spaceId }: { spaceId: Id }) {
   const [joinCode, setJoinCode] = useState<string | null>(null);
   const [showJoin, setShowJoin] = useState(false);
   const [codeInput, setCodeInput] = useState('');
+  const [scanning, setScanning] = useState(false);
 
   useEffect(() => {
     void refresh();
@@ -78,19 +81,44 @@ function SyncSection({ spaceId }: { spaceId: Id }) {
     }
   }, [joinCode, toast]);
 
-  const handleJoin = useCallback(async () => {
-    const code = codeInput.trim();
-    if (!code) return;
-    setBusy(true);
-    try {
-      await join(code);
-      toast.show({ message: 'Joined — reloading', variant: 'success' });
-      window.location.reload();
-    } catch (err) {
-      toast.show({ message: err instanceof Error ? err.message : 'Could not join', variant: 'error' });
-      setBusy(false);
-    }
-  }, [codeInput, join, toast]);
+  const joinWithCode = useCallback(
+    async (code: string) => {
+      const trimmed = code.trim();
+      if (!trimmed) return;
+      setBusy(true);
+      try {
+        await join(trimmed);
+        toast.show({ message: 'Joined — reloading', variant: 'success' });
+        window.location.reload();
+      } catch (err) {
+        toast.show({
+          message: err instanceof Error ? err.message : 'Could not join',
+          variant: 'error',
+        });
+        setBusy(false);
+      }
+    },
+    [join, toast],
+  );
+
+  const handleJoin = useCallback(() => void joinWithCode(codeInput), [codeInput, joinWithCode]);
+
+  const handleScanResult = useCallback(
+    (text: string) => {
+      setScanning(false);
+      void joinWithCode(text);
+    },
+    [joinWithCode],
+  );
+
+  const handleScanError = useCallback(
+    (message: string) => {
+      setScanning(false);
+      setShowJoin(true);
+      toast.show({ message, variant: 'error' });
+    },
+    [toast],
+  );
 
   const handleSyncNow = useCallback(async () => {
     setBusy(true);
@@ -113,6 +141,7 @@ function SyncSection({ spaceId }: { spaceId: Id }) {
       await disable();
       setJoinCode(null);
       setShowJoin(false);
+      setScanning(false);
       toast.show({ message: 'Disconnected from sync', variant: 'success' });
     } finally {
       setBusy(false);
@@ -139,10 +168,17 @@ function SyncSection({ spaceId }: { spaceId: Id }) {
           {joinCode ? (
             <>
               <p className="settings__hint">
-                On the other phone, open Settings → Sync across devices → Join a space, and paste
-                this. Anyone with this code can read and write this space, so share it directly.
+                On the other phone, open Settings → Sync across devices → Join a space → Scan QR, and
+                point it at this. Anyone with this code can read and write this space, so share it
+                directly.
               </p>
-              <code className="settings__code">{joinCode}</code>
+              <div className="settings__qr">
+                <QrCode value={joinCode} />
+              </div>
+              <details className="settings__code-details">
+                <summary>Can't scan? Show the code to copy</summary>
+                <code className="settings__code">{joinCode}</code>
+              </details>
             </>
           ) : null}
           <div className="settings__buttons">
@@ -172,10 +208,16 @@ function SyncSection({ spaceId }: { spaceId: Id }) {
           {joinCode ? (
             <>
               <p className="settings__hint">
-                On the other phone: Settings → Sync across devices → Join a space, then paste this
-                code. Anyone with it can read and write this space.
+                On the other phone: Settings → Sync across devices → Join a space → Scan QR, then
+                point it at this. Anyone with it can read and write this space.
               </p>
-              <code className="settings__code">{joinCode}</code>
+              <div className="settings__qr">
+                <QrCode value={joinCode} />
+              </div>
+              <details className="settings__code-details">
+                <summary>Can't scan? Show the code to copy</summary>
+                <code className="settings__code">{joinCode}</code>
+              </details>
             </>
           ) : null}
           <div className="settings__buttons">
@@ -200,21 +242,50 @@ function SyncSection({ spaceId }: { spaceId: Id }) {
           ) : null}
           {showJoin ? (
             <div className="settings__join">
-              <textarea
-                className="settings__textarea"
-                placeholder="Paste the join code from the other phone"
-                value={codeInput}
-                onChange={(e) => setCodeInput(e.target.value)}
-                rows={3}
-              />
-              <button
-                type="button"
-                className="btn btn--primary"
-                onClick={() => void handleJoin()}
-                disabled={busy || codeInput.trim() === ''}
-              >
-                Join
-              </button>
+              {scanning ? (
+                <>
+                  <p className="settings__hint">
+                    Point the camera at the QR code on the other phone.
+                  </p>
+                  <QrScanner onResult={handleScanResult} onError={handleScanError} />
+                  <button
+                    type="button"
+                    className="btn btn--secondary"
+                    onClick={() => setScanning(false)}
+                    disabled={busy}
+                  >
+                    Stop scanning
+                  </button>
+                </>
+              ) : (
+                <button
+                  type="button"
+                  className="btn btn--primary settings__scan-btn"
+                  onClick={() => setScanning(true)}
+                  disabled={busy}
+                >
+                  <Icon name="camera" size={18} />
+                  <span>Scan QR</span>
+                </button>
+              )}
+              <details className="settings__code-details">
+                <summary>Or paste the code instead</summary>
+                <textarea
+                  className="settings__textarea"
+                  placeholder="Paste the join code from the other phone"
+                  value={codeInput}
+                  onChange={(e) => setCodeInput(e.target.value)}
+                  rows={3}
+                />
+                <button
+                  type="button"
+                  className="btn btn--primary"
+                  onClick={handleJoin}
+                  disabled={busy || codeInput.trim() === ''}
+                >
+                  Join
+                </button>
+              </details>
             </div>
           ) : null}
         </>

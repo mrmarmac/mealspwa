@@ -56,6 +56,15 @@ function pickGenerateName(): string {
 }
 
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const FULL_DAY_NAMES = [
+  'Sunday',
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
+];
 const MEAL_LABEL: Record<MealType, string> = { lunch: 'Lunch', dinner: 'Dinner' };
 
 function formatDayHeading(date: ISODate): { day: string; num: string } {
@@ -453,7 +462,7 @@ export default function PlanScreen() {
                             onClick={() => void placeLeftover(date, mealType)}
                           >
                             <Icon name="leftovers" size={16} />
-                            <span>Place here</span>
+                            <span>{FULL_DAY_NAMES[fromISODate(date).getDay()]}</span>
                           </button>
                         ) : (
                           <span className="plan__slot-blocked" aria-hidden="true" />

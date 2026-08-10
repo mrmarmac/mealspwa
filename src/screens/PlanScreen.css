@@ -607,9 +607,13 @@
   }
 
   /* Smaller slot text, and placed-meal titles wrap to two lines inside the now
-     wider cards instead of truncating on one. */
+     wider cards instead of truncating on one. The leftover-mode slots
+     (.plan__place-leftover, .plan__slot-blocked) match the empty slot exactly
+     so entering leftover mode never resizes a cell or reflows the board. */
   .plan__day .meal-card,
-  .plan__day .plan__empty {
+  .plan__day .plan__empty,
+  .plan__day .plan__place-leftover,
+  .plan__day .plan__slot-blocked {
     font-size: var(--font-size-xs);
   }
 
