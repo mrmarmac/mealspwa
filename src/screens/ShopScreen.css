@@ -42,7 +42,11 @@
   cursor: pointer;
 }
 
-.shop__title {
+/* The date range is now the screen's title, so it wears the heading's weight
+   and size instead of the small, muted treatment it had as a subtitle. */
+.shop__range-title {
+  flex: 1;
+  min-width: 0;
   font-size: var(--font-size-xxl);
   font-weight: var(--font-weight-bold);
   line-height: var(--line-height-tight);
@@ -50,6 +54,7 @@
 }
 
 .shop__count {
+  flex: 0 0 auto;
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
   color: var(--color-text-secondary);
