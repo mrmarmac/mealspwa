@@ -23,10 +23,15 @@ npm install --no-audit --no-fund
 # Optional Cloudflare Worker subprojects (recipe fetcher + sync backend).
 # Best-effort: a session working on the main app doesn't need these, so a
 # failure here must not block startup.
+#
+# --no-package-lock: these installs must not leave the git tree dirty on every
+# session. Without it, npm rewrites sync-worker's committed lockfile and
+# creates one under worker/ (which has none), which then trips the "uncommitted
+# changes" stop-hook. The install still works; it just won't touch lockfiles.
 for sub in worker sync-worker; do
   if [ -f "$sub/package.json" ]; then
     echo "[session-start] Installing $sub dependencies (best-effort)…"
-    npm install --no-audit --no-fund --prefix "$sub" || \
+    npm install --no-audit --no-fund --no-package-lock --prefix "$sub" || \
       echo "[session-start] WARN: $sub install failed; continuing."
   fi
 done
