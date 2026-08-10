@@ -9,5 +9,9 @@ dist-ssr/
 .env.*.local
 coverage/
 tsconfig.tsbuildinfo
+playwright-report/
+test-results/
+blob-report/
+.playwright/
 worker/node_modules/
 worker/.wrangler/
